@@ -4,9 +4,11 @@ This module handles downloading and uploading of excel workbooks.
 
 from playwright.sync_api import Page
 from openpyxl import Workbook
+from helper_functions import log_rate_limit
 import io
 import os
 import openpyxl
+import logging
 
 def download_excel(page: Page, site_url: str, excel_relative_path: str) -> Workbook:
     '''downloads the Excel file'''
@@ -17,10 +19,14 @@ def download_excel(page: Page, site_url: str, excel_relative_path: str) -> Workb
         excel_bytes = response.body()  # loads the bytes of the object into RAM
         excel_buffer = io.BytesIO(excel_bytes)  # wraps the bytes in a file
         wb = openpyxl.load_workbook(excel_buffer)  # load it into a workbook
-        print("Workbook downloaded.")
+        logging.info("Workbook downloaded")
+        log_rate_limit(response)
+
         return wb
 
-    raise RuntimeError(f"Download failed: {response.status} - {response.text()[:200]}")
+    error_msg = "Download failed: %s - %s", response.status, response.text()[:200]
+    logging.error("Download failed: %s - %s", response.status, response.text()[:200])
+    raise RuntimeError(error_msg)
 
 def get_request_digest(page: Page, site_url: str) -> str:
     '''
@@ -35,9 +41,12 @@ def get_request_digest(page: Page, site_url: str) -> str:
                                      "Accept": "application/json;odata=verbose"
                                  })
 
-    if not response.ok:  # .ok is a bool
-        raise RuntimeError(f"Get digest failed: {response.status} - {response.text()}")
+    if not response.ok:  # response.ok returns a bool
+        error_msg = "Get digest failed: %s - %s", response.status, response.text()
+        logging.error(error_msg)
+        raise RuntimeError(error_msg)
 
+    log_rate_limit(response)
     data = response.json()  # returns parsed json
 
     # go through bunch of arrays to get the digest
@@ -79,6 +88,9 @@ def upload_excel(page: Page, wb: Workbook,  site_url: str, excel_relative_path: 
     )
 
     if not response.ok:
-        raise Exception(f"Upload failed: {response.status} - {response.text()}")
+        error_msg = "Upload failed: %s - %s", response.status, response.text()
+        logging.error("Upload failed: %s - %s", response.status, response.text())
+        raise RuntimeError(error_msg)
 
-    print("Workbook uploaded.")
+    log_rate_limit(response)
+    logging.info("Workbook uploaded")

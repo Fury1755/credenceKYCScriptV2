@@ -8,21 +8,20 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv() #gives the script access to the .env file in project root
-#we use os.environ because these configs are required, as opposed to os.getenv
-
-def get_env(key: str) -> str:
-    env_value = os.environ[key] #guaranteed to return a string or raise an exception, so no error checking needed
-    return env_value
+#we use os.environ because these configs are required, as opposed to os.getenv which can return None
 
 #this is the sharepoint site URL
-SITE_URL = get_env("SITE_URL")
+SITE_URL = os.environ["SITE_URL"]
 
 #this is a server-relative path, not the URL
-EXCEL_RELATIVE_PATH = get_env("EXCEL_RELATIVE_PATH")
+EXCEL_RELATIVE_PATH = os.environ["EXCEL_RELATIVE_PATH"]
 
 #this is the path to the browser profile, which playwright needs to open a persistent context and
 #make requests using the cookies from that login.
-BROWSER_PROFILE_DIR = get_env("BROWSER_PROFILE_DIR")
+BROWSER_PROFILE_DIR = os.environ["BROWSER_PROFILE_DIR"]
 
 #this is the current letter of the companies that we are checking (ranges from [A-Z])
-CURRENT_LETTER = get_env("CURRENT_LETTER")
+CURRENT_LETTER = os.environ["CURRENT_LETTER"]
+
+#this is the relative path of the company list ("Credence - Corp Sec -> List from A-Z")
+COMPANY_LIST_BY_LETTER_PATH = os.environ["COMPANY_LIST_BY_LETTER_PATH"]

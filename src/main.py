@@ -1,16 +1,33 @@
 '''
 This is the main module. It it initialises the browser instance and orchestrates functions.
 This script uses playwright's page.get() to send requests to Sharepoint's REST API.
-The functions are written to be as pure as possible.
+I tried to make the functions as pure as possible for max reliability
 '''
 from playwright.sync_api import sync_playwright
-from config import BROWSER_PROFILE_DIR, SITE_URL, CURRENT_LETTER, EXCEL_RELATIVE_PATH
-from excel.excel_io import download_excel, upload_excel
-from excel.excel_processing import read_latest_company
+import config
+from excel.excel_io import download_excel
+from excel.excel_processing import get_latest_company_name
+
+import logging
+logging.basicConfig(
+    level=logging.DEBUG,
+
+    # Notice how the below parameters don't use f-strings
+    # Logging's format string is stored once, then the placeholders are
+    #  replaced by specific values from the specific log record (mutable
+    #  template applied to different data)
+    # Whereas f-strings are created immediately at the time of
+    #  execution (immutable string at runtime)
+    format="%(asctime)s - %(levelno)s - %(funcName)s - %(message)s",
+
+    # A handler determines where the log goes.
+    # For this script, StreamHandler is sufficient (writes to console)
+    handlers = [logging.StreamHandler()]
+)
 
 with sync_playwright() as pw:
     context = pw.chromium.launch_persistent_context(
-        user_data_dir=BROWSER_PROFILE_DIR,
+        user_data_dir=config.BROWSER_PROFILE_DIR,
         channel='msedge',
         headless=False,
         args=[
@@ -28,9 +45,11 @@ with sync_playwright() as pw:
     for p in context.pages[1:]: #close irrelevant pages
         p.close()
 
-    page.goto(SITE_URL) #refresh the cookies
+    # refresh the cookies
+    page.goto(config.SITE_URL)
 
-    wb = download_excel(page=page, site_url=SITE_URL, excel_relative_path=EXCEL_RELATIVE_PATH)
-    wb = read_latest_company(wb=wb, CURRENT_LETTER=CURRENT_LETTER)
-    upload_excel(page=page, wb=wb, site_url=SITE_URL, excel_relative_path=EXCEL_RELATIVE_PATH)
+    wb = download_excel(page, config.SITE_URL, config.EXCEL_RELATIVE_PATH)
+
+    latest_company_name = get_latest_company_name(wb, config.CURRENT_LETTER)
+
     #  don't need context.close(); playwright closes it automatically at the end of 'with'
