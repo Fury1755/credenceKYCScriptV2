@@ -14,3 +14,8 @@
 - Created 'sharepoint_types.py': provides static analysis for server responses
 - Created 'helper_functions.py': logs server rate limits and parses urls
 - Implemented basic error logging using the logging module
+
+## 2026-05-29
+- Created 'navigation_functions.py': fetches subfolders from a Sharepoint url
+- Created 'response_helpers.py': automatic rate throttling
+- Created 'string_helpers.py': fuzzy matching functions using the rapidfuzz library
