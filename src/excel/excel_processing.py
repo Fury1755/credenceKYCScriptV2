@@ -38,9 +38,8 @@ def get_latest_company_name(wb: Workbook, current_letter: str) -> str:
         print(last_cell.value)
         return str(last_cell.value)
 
-    error_msg = f"No cell found in worksheet '{ws.title}'"
     logging.error("No cell found in worksheet %s", ws.title)
-    raise ValueError(error_msg)
+    raise ValueError(f"No cell found in worksheet '{ws.title}'")
 
 def get_last_filled_cell(ws: Worksheet, column: Union[int,str]) -> Optional[Cell]:
     '''

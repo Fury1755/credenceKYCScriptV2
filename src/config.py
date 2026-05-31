@@ -14,7 +14,7 @@ load_dotenv() #gives the script access to the .env file in project root
 SITE_URL = os.environ["SITE_URL"]
 
 #this is a server-relative path, not the URL
-EXCEL_RELATIVE_PATH = os.environ["EXCEL_RELATIVE_PATH"]
+EXCEL_URL = os.environ["EXCEL_URL"]
 
 #this is the path to the browser profile, which playwright needs to open a persistent context and
 #make requests using the cookies from that login.
@@ -23,5 +23,5 @@ BROWSER_PROFILE_DIR = os.environ["BROWSER_PROFILE_DIR"]
 #this is the current letter of the companies that we are checking (ranges from [A-Z])
 CURRENT_LETTER = os.environ["CURRENT_LETTER"]
 
-#this is the relative path of the company list ("Credence - Corp Sec -> List from A-Z")
+#this is the raw url of the company list ("Credence - Corp Sec -> List from A-Z")
 COMPANY_LIST_BY_LETTER_PATH = os.environ["COMPANY_LIST_BY_LETTER_PATH"]

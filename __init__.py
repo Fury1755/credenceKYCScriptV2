@@ -1,2 +1,0 @@
-# this file can be left empty. just lets python
-#  recognize the src as a folder so you can import from there
