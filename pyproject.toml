@@ -1,7 +1,7 @@
 [project]
 name="KYCScriptv2"
 version="0.1.0"
-description="sharepoint automation"
+description="SharePoint automation"
 dependencies = [
     "openpyxl>=3.1.5",
     "playwright>=1.60.0",

@@ -1,4 +1,4 @@
-"""This module contains helper functions that interact directly with server responses."""
+"""This module contains generic helper functions that interact directly with server responses."""
 
 from playwright.sync_api import APIResponse, Page
 from typing import Optional
@@ -93,9 +93,9 @@ def request_with_retry(
             response = page.request.delete(url, headers=headers, **kwargs)
         else:
             logging.error("Unexpected method: %s", method)
-            raise RuntimeError(f"Unexpected method: {method}")
+            raise RuntimeError(f"Unexpected method in request_with_retry: {method}")
 
-            # 429, 503 are the HTTP status codes sharepoint sends when requests fail
+            # 429, 503 are the HTTP status codes SharePoint sends when requests fail
         if response.status not in (429, 503):
             logging.debug("URL: %s, \n Status: %s", url, response.status)
             log_rate_limit(response)
@@ -122,7 +122,7 @@ def request_with_retry(
 def get_request_digest(page: Page, site_url: str) -> str:
     """
     Returns a digest by querying the site_url.
-    Sharepoint requires a valid X-RequestDigest header for state-changing operations like
+    SharePoint requires a valid X-RequestDigest header for state-changing operations like
     POST, PUT and DELETE.
     """
 

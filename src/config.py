@@ -25,3 +25,6 @@ CURRENT_LETTER = os.environ["CURRENT_LETTER"]
 
 #this is the raw url of the company list ("Credence - Corp Sec -> List from A-Z")
 COMPANY_LIST_BY_LETTER_PATH = os.environ["COMPANY_LIST_BY_LETTER_PATH"]
+
+#path to local folder where files will be downloaded
+WORKSPACE_PATH = os.environ["WORKSPACE_PATH"]

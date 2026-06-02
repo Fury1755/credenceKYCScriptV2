@@ -1,20 +1,20 @@
 """
 This is the main module. It it initialises the browser instance and orchestrates functions.
-This script uses playwright's page.get() to send requests to Sharepoint's REST API.
+This script uses playwright's page.get() to send requests to SharePoint's REST API.
 I tried to make the functions as pure as possible for max reliability
 """
 
 from playwright.sync_api import sync_playwright
 import config
-from helpers import url_helpers
-from excel.excel_io import download_excel
-from excel.excel_processing import get_latest_company_name
-from sharepoint_navigation import orchestration
+from core import url_helpers
+from boundary.excel_io import download_excel
+from core.excel_processing import get_latest_company_name
+from orchestration.sharepoint_orchestration import get_current_company
 
 import logging
 
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     # Notice how the below parameters don't use f-strings
     # Logging's format string is stored once, then the placeholders are
     #  replaced by specific values from the specific log record (mutable
@@ -59,12 +59,7 @@ with sync_playwright() as pw:
 
     latest_company_name = get_latest_company_name(wb, config.CURRENT_LETTER)
 
-    orchestration.get_latest_company(
-        page,
-        config.SITE_URL,
-        config.COMPANY_LIST_BY_LETTER_PATH,
-        config.CURRENT_LETTER,
-        latest_company_name,
+    current_company = get_current_company(
+        page, config.SITE_URL, config.COMPANY_LIST_BY_LETTER_PATH, latest_company_name
     )
-
     #  don't need context.close(); playwright closes it automatically at the end of 'with'

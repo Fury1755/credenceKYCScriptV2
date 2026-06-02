@@ -1,15 +1,20 @@
 """
-This module contains functions that navigate sharepoint folders.
+This module contains functions that navigate SharePoint folders.
 """
 
 from playwright.sync_api import Page, APIResponse
-from helpers import response_helpers, string_helpers
-from typing import List
+from src.core import string_helpers
+import config
+from typing import List, Optional
+from datetime import datetime
 import re
+import io
 import logging
 
+from src.boundary import response_helpers
 
-def walk_folders(page: Page, endpoint_id: str, site_url: str) -> APIResponse:
+
+def walk_folder(page: Page, endpoint_id: str, site_url: str) -> APIResponse:
     """
     This function gets the subfolders and files of a folder's relative URL.
     """
@@ -27,10 +32,10 @@ def walk_folders(page: Page, endpoint_id: str, site_url: str) -> APIResponse:
         # specify root folder fields, so the response includes itself (the root folder)
         #  and we know where the children came from
         # '&' separates query parameters when thhere is more than one
-        "&$select=Name,ServerRelativeUrl,"
+        "&$select=Name,ServerRelativeUrl,TimeLastModified"
         # filter child fields
-        "Folders/Name,Folders/ServerRelativeUrl,"
-        "Files/Name,Files/ServerRelativeUrl"
+        "Folders/Name,Folders/ServerRelativeUrl,Folders/TimeLastModified"
+        "Files/Name,Files/ServerRelativeUrl,Files/TimeLastModified"
     )
 
     response = response_helpers.request_with_retry(
@@ -41,8 +46,11 @@ def walk_folders(page: Page, endpoint_id: str, site_url: str) -> APIResponse:
 
 
 def get_folders_and_files(response: APIResponse) -> dict[str, List[dict[str, str]]]:
-    """Returns a dictionary of 'Files' and 'Folders' from a Sharepoint response."""
-    response_data = response.json()["d"]
+    """Returns a dictionary of 'Files' and 'Folders' from a SharePoint response."""
+    if "d" in response.json():
+        response_data = response.json()["d"]
+    else:
+        response_data = response.json()
     output = {}
 
     # provide empty Dicts and Lists to default to if nothing is found
@@ -63,7 +71,7 @@ def get_folders_and_files(response: APIResponse) -> dict[str, List[dict[str, str
 
 
 def get_folder_and_file_names(response: APIResponse) -> dict[str, List[str]]:
-    """Returns a dictionary of 'Folders' and 'Files' names from a Sharepoint response."""
+    """Returns a dictionary of 'Folders' and 'Files' names from a SharePoint response."""
 
     # According to the REST API, calling with $expand guarantees wrapping in ['results']
     # And any item is guaranteed to have a property 'Name'
@@ -77,15 +85,16 @@ def get_folder_and_file_names(response: APIResponse) -> dict[str, List[str]]:
     # We don't need error checking; get_folders_and_files would have caught it already.
     return name_list
 
+
 def get_folder_names(response: APIResponse) -> List[str]:
-    '''Returns a List of 'Folders' names from a Sharepoint response.'''
+    """Returns a List of 'Folders' names from a SharePoint response."""
 
     output = get_folder_and_file_names(response).get("Folders")
 
     if not output:
         logging.error("get_folder_names found no folders in %s", response.text())
         raise RuntimeError("get_folder_names found no Folders")
-    
+
     return output
 
 
@@ -122,14 +131,21 @@ def decide_folder(response: APIResponse, query: str) -> str:
     return match_item[0]["ServerRelativeUrl"]
 
 
-def bizfile_collector(company_response: APIResponse):
-    """Recursively iterates through and gets the most recent ACRA bizfile in a company."""
+def bizfile_collector(
+    page: Page,
+    site_url: str,
+    acra_docs_response: APIResponse,
+    latest_profile_info: Optional[dict[str, str]],
+):
+    """
+    Recursively iterates through and gets the most recent ACRA bizfile in a company.
+    latest_profile_info is a dictionary with keys 'TimeLastModified' and 'ServerRelativeUrl'.
+    """
 
-    acradocs_id = decide_folder(company_response, "ACRA Docs")
-    response = company_response
+    response = acra_docs_response
 
     # Recursive block below
-    
+
     contents = get_folders_and_files(response)
     folders = contents.get("Folders", {})
     files = contents.get("Files", {})
@@ -137,9 +153,47 @@ def bizfile_collector(company_response: APIResponse):
     #  Let's get all the profile pdfs first
     if files:
         # We know files exists in this block but we use | None to satisfy type checker
-        file_names: List[str] | None = get_folder_and_file_names(response).get("Files")
-        profile_names = []
-        if file_names:  # again, type checker
-            for name in file_names:
-                if name.lower() == re.compile(r".*profile.*") and name.endswith(".pdf"):
-                    profile_names.append(name)
+        for file in files:
+            # check if it is a pdf
+            if re.search(r".*profile.*", file["Name"], re.IGNORECASE) and file[
+                "Name"
+            ].lower().endswith(".pdf"):
+                file_latest: datetime = datetime.fromisoformat(file["TimeLastModified"])
+                if not latest_profile_info:
+                    latest_profile_info = {}
+                    latest_profile_info["ServerRelativeUrl"] = file["ServerRelativeUrl"]
+                    latest_profile_info["TimeLastModified"] = file["TimeLastModified"]
+
+                else:
+                    historical_latest: datetime = datetime.fromisoformat(
+                        latest_profile_info["TimeLastModified"]
+                    )
+
+                    if file_latest >= historical_latest:
+                        # then we download the latest business profile
+                        endpoint = (
+                            f"{site_url}/_api/web/GetFileByServerRelativeUrl"
+                            f"('{file['ServerRelativeUrl']}')/$value"
+                        )
+                        file_response = response_helpers.request_with_retry(
+                            page,
+                            "GET",
+                            endpoint,
+                            headers={"Accept": "application/json;odata=verbose"},
+                        )
+
+                        # download it to workspace
+                        if "d" in file_response.json():
+                            response_data = file_response.json()["d"]
+                        else:
+                            response_data = file_response.json()
+                        file_bytes = file_response.body()
+                        buffer = io.BytesIO(file_bytes)
+                        open(config.WORKSPACE_PATH, "wb").write(buffer.getvalue())
+
+    if folders:
+        for folder in folders:
+            folder_response = walk_folder(page, folder["ServerRelativeUrl"], site_url)
+
+            # extend this folder's profile_names to the name_list
+            bizfile_collector(page, site_url, folder_response, latest_profile_info)
