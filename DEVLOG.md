@@ -30,5 +30,10 @@
 - created 'sharepoint_client.py': encapsulation of API related calls within a class
 - created 'sharepoint_exceptions.py' and implemented defensive programming for I/O
 
-## 2026-05-02
+## 2026-06-02
 - refactored functions into 'core', 'boundary' and 'orchestration' folders
+
+## 2026-06-03
+- created 'pdf_processing.py' and 'pdf_io.py': parses pdf business files
+- implemented recursive folder searching for business files
+- switched to cloakbrowser to bypass bot detection

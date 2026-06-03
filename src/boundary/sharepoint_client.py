@@ -21,6 +21,7 @@ from boundary.sharepoint_exceptions import (
 from boundary import response_helpers
 from core import string_helpers
 from boundary.sharepoint_client_helpers.folder_mixin import FolderMixin
+from typing import Optional, List
 import logging
 
 
@@ -116,6 +117,70 @@ class SharePointClient(FolderMixin):
             raise SharePointResponseError(e) from e  # 'from e' chains the traceback
         return response
 
+    def _build_client_query(self, query: str) -> "SharePointClient":
+        """Builds a SharePointClient with a name closest to the query. Returns an APIResponse."""
+
+        response = self._walk_folder()
+        contents = self._get_folders_and_files(response)
+        if not contents:
+            raise SharePointKeyError(
+                f"Build client found no folders or files in {self.name}"
+            )
+        folder = None
+        file = None
+        # get the best matching folder and file
+        try:
+            folder = self._get_item_data(query, contents.get("Folders"))
+            file = self._get_item_data(query, contents.get("Files"))
+        except ValueError:
+            logging.info("best_match_item found no item %s in %s", query, self.name)
+        item = None
+
+        # select the best matching item to build the client with
+        if folder and file:
+            item_name = string_helpers.best_match_item(
+                query, [folder["Name"], file["Name"]]
+            )
+            if folder["Name"] == item_name:
+                item = folder
+            else:
+                item = file
+        if not file:
+            item = folder
+        if not folder:
+            item = file
+
+        if item is None:
+            logging.error(
+                "Build client failed, no folders and files were found matching %s in %s",
+                query,
+                self.name,
+            )
+            raise SharePointError("Factory method '_build_client' failed")
+        client = SharePointClient(
+            self.page,
+            self.site_url,
+            item["ServerRelativeUrl"],
+            item["Name"],
+            item["TimeLastModified"],
+            # I don't know if item is the correct type. If it works then it is.
+            str(self._parse_item_type(item)),
+        )
+
+        return client
+
+    def get_bizfile(self, company: "SharePointClient"):
+        """Returns the name and time of the most recent bizfile"""
+
+        # pylint: disable=protected-access
+        acra_docs = company._build_client_query("ACRA Docs")
+        acra_docs_response = acra_docs._walk_folder()
+        acra_docs_contents = acra_docs._get_folders_and_files(acra_docs_response)
+        if acra_docs_contents is None:
+            raise SharePointError(f"No files and folders found in {acra_docs.name}")
+        bizfile = acra_docs._bizfile_recursive_explorer(acra_docs_contents, None)
+        return bizfile
+
     def get_next_company_name(
         self, previous_company: str
     ) -> "SharePointClient":  # this is a public method
@@ -128,7 +193,8 @@ class SharePointClient(FolderMixin):
         current_letter = previous_company[0].upper()
         logging.info("Current letter found: '%s'", current_letter)
         current_letter_relative = self._decide_folder(
-            previous_company[0].upper()  #  gets first letter of query as current letter
+            #  gets first letter of query as current letter
+            current_letter,
         )
         current_letter_list = SharePointClient(
             # instantiates a single letter folder such as 'B' as a client
@@ -140,8 +206,8 @@ class SharePointClient(FolderMixin):
             str(1),  # we know this is a folder
         )
 
-        current_letter_response = current_letter_list._walk_folder()
-        current_letter_contents = current_letter_list._get_folders_and_files(
+        current_letter_response = current_letter_list._walk_folder()  # pylint: disable=protected-access
+        current_letter_contents = current_letter_list._get_folders_and_files(  # pylint: disable=protected-access
             current_letter_response
         )
 
@@ -187,19 +253,9 @@ class SharePointClient(FolderMixin):
             )
 
         try:
-            current_company_relative = current_company_data["ServerRelativeUrl"]
-            current_company_name = current_company_data["Name"]
-            current_company_time = current_company_data["TimeLastModified"]
-            current_company_type = current_company_data["FileSystemObjectType"]
-            current_company = SharePointClient(
-                self.page,
-                self.site_url,
-                current_company_relative,
-                current_company_name,
-                current_company_time,
-                current_company_type,
+            current_company = current_letter_list._build_client_query(  # pylint:disable=protected-access
+                current_company_name
             )
-
             return current_company
 
         except Exception as e:
@@ -212,3 +268,63 @@ class SharePointClient(FolderMixin):
             raise SharePointKeyError(
                 f"Could not find item attributes in object {current_company_name}"
             ) from e
+
+    def _bizfile_recursive_explorer(
+        self,
+        contents: dict[str, List[dict[str, str]]],
+        most_recent_file: Optional[dict[str, str]],
+    ) -> dict[str, str]:
+
+        # pylint: disable=protected-access
+        # returns a dictionary of the pdf containing all its attributes
+        folders = contents.get("Folders")
+        files = contents.get("Files")
+
+        if files:
+            for file in files:
+                if not most_recent_file:
+                    if file['Name'].endswith(".pdf") and "profile" in file['Name'].lower():
+                        most_recent_file = file
+                else:
+                    if self._compare_pdfs(file, most_recent_file):
+                        # most_recent_file is changed to file
+                        # this is fine because python doesnt pass by reference
+                        # it is passed by a copy of reference
+                        # so most_recent_file outside of this function does not mutate.
+                        logging.debug(
+                            "Found file '%s' with TimeLastModified '%s'",
+                            file["Name"],
+                            file["TimeLastModified"],
+                        )
+                        most_recent_file = file
+
+        if folders:
+            for folder in folders:
+                logging.info("Entering folder %s", folder["Name"])
+                folder_client = SharePointClient(
+                    self.page,
+                    self.site_url,
+                    folder["ServerRelativeUrl"],
+                    folder["Name"],
+                    folder["TimeLastModified"],
+                    str(self._parse_item_type(folder)),
+                )
+                folder_contents = folder_client._get_folders_and_files(
+                    folder_client._walk_folder()
+                )
+                if folder_contents:
+                    most_recent_file = folder_client._bizfile_recursive_explorer(
+                        folder_contents, most_recent_file
+                    )
+
+        if most_recent_file is None:
+            logging.error(
+                "Recursive explorer was expecting a file found in %s, but nothing was found",
+                self.name,
+            )
+            raise SharePointError(
+                f"Recursive explorer was expecting a file found in {self.name}, "
+                "but nothing was found"
+            )
+
+        return most_recent_file

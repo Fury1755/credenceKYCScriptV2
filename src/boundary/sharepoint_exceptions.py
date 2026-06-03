@@ -28,3 +28,9 @@ class SharePointKeyError(SharePointError):
     """
     Key not found in a dictionary from SharePoint response
     """
+
+
+class SharePointAttributeError(SharePointError):
+    """
+    Item attributes not accessible when initializing an instance of SharePointClient.
+    """

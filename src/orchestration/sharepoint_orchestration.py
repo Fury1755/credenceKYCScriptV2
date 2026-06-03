@@ -5,6 +5,7 @@
 from playwright.sync_api import Page
 from boundary.sharepoint_client import SharePointClient
 from core.url_helpers import get_url_id
+import logging
 
 
 def get_current_company(
@@ -16,6 +17,7 @@ def get_current_company(
     """
 
     server_relative_url = get_url_id(server_raw_url)
+
     a_to_z_list = SharePointClient(
         page,
         site_url,
@@ -26,4 +28,8 @@ def get_current_company(
     )
 
     current_company = a_to_z_list.get_next_company_name(previous_company)
+    logging.info(
+        "Successfully got next company '%s' as SharePointClient", current_company.name
+    )
+
     return current_company

@@ -2,7 +2,7 @@
 
 from playwright.sync_api import APIResponse, Page
 from boundary.sharepoint_exceptions import (
-    SharePointError,
+    SharePointAttributeError,
     SharePointContractViolation,
     SharePointDuplicateError,
     SharePointKeyError,
@@ -21,6 +21,7 @@ class FolderMixin:
     """mixin for sharepoint_client's folder functions"""
 
     @property
+    # abstract methods are just fancy forward declarations.
     @abstractmethod
     def page(self) -> Page:
         """
@@ -138,6 +139,8 @@ class FolderMixin:
     def _get_item_data(
         self, query: str, items: Optional[List[dict[str, str]]]
     ) -> Optional[dict[str, str]]:
+        """Returns the an item with a key 'Name' matching the query.
+        Takes a list of dictionaries as arguments."""
         if not items:
             return None
         item_names: List[str] = [item["Name"] for item in items]
@@ -178,7 +181,7 @@ class FolderMixin:
     def _decide_folder(self, query: str) -> str:
         """
         Takes the response of a folder directory
-        and returns a server relative id corresponding to a item whose
+        and returns a server relative id_value corresponding to a item whose
         name is closest to the matching query.
         """
 
@@ -218,3 +221,42 @@ class FolderMixin:
             )
 
         return match_item[0]["ServerRelativeUrl"]
+
+    def _parse_item_type(self, item_data: dict) -> int:
+        """Takes a SharePoint item's item_data as input and returns its type"""
+        if "FileSystemObjectType" in item_data:
+            return int(item_data["FileSystemObjectType"])
+        if "__metadata" in item_data:
+            item_metadata = item_data["__metadata"]
+            item_type = item_metadata.get("type", {}).lower()
+            if "folder" in item_type:
+                logging.debug("Found object with type 'Folder'")
+                return 1
+            if "web" in item_type:
+                # because we don't expect to find web
+                logging.warning("Found object with type 'Web'")
+                return 2
+            if "file" in item_type:
+                logging.debug("Found object with type 'File'")
+                return 0
+            if "invalid" in item_type:
+                logging.warning("Accessing invalid item in %s", self.name)
+                return -1
+
+        logging.error("Type attribute not accessed in %s", self.name)
+        raise SharePointAttributeError("Error: Type attribute not accessed")
+
+    def _compare_pdfs(
+        self, file: dict[str, str], most_recent_file: dict[str, str]
+    ) -> bool:
+        if not (".pdf" in file["Name"].lower() and "profile" in file["Name"].lower()):
+            return False
+        # ISO formats for date times are lexicographically comparable
+        if file["TimeLastModified"] >= most_recent_file["TimeLastModified"]:
+            logging.info(
+                "Updated TimeLastModified to %s", file["TimeLastModified"]
+            )
+            return True
+        return False
+
+

@@ -21,7 +21,7 @@ def best_match_item(query: str, items: List[str]) -> str:
         query, items, limit=1, score_cutoff=80
     )
     if not matches:
-        logging.error(
+        logging.debug(
             "No good match found in best_match_item.\n Query: %s \n Search list: %s",
             query,
             items,
