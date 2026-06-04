@@ -32,7 +32,7 @@ def best_match_item(query: str, items: List[str]) -> str:
 
 def get_next_name(last_company_name: str, name_list: List[str]) -> str:
     """Returns the next company, alphabetically sorted, in name_list after last_company_name."""
-    new_list = sorted(name_list)
+    new_list = sorted(name_list, key=str.lower)
     if last_company_name not in name_list:
         logging.error(
             "Could not find company name '%s' in the list %s",

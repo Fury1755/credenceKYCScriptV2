@@ -17,6 +17,8 @@ from boundary.sharepoint_exceptions import (
     SharePointResponseError,
     SharePointError,
     SharePointKeyError,
+    SharePointOverwriteError,
+    SharePointContractViolation,
 )
 from boundary import response_helpers
 from core import string_helpers
@@ -99,7 +101,7 @@ class SharePointClient(FolderMixin):
         # We convert to an integer value for clarity
         return int(self._file_system_object_type)
 
-    def _request(self, method: str, url: str, **kwargs) -> APIResponse:
+    def request(self, method: str, url: str, **kwargs) -> APIResponse:
         """
         Encapsulated request_with_retry method for a client instance.
         """
@@ -118,7 +120,7 @@ class SharePointClient(FolderMixin):
         return response
 
     def _build_client_query(self, query: str) -> "SharePointClient":
-        """Builds a SharePointClient with a name closest to the query. Returns an APIResponse."""
+        """Builds a SharePointClient with a name closest to the query."""
 
         response = self._walk_folder()
         contents = self._get_folders_and_files(response)
@@ -128,12 +130,22 @@ class SharePointClient(FolderMixin):
             )
         folder = None
         file = None
+        folders = None
+        files = None
         # get the best matching folder and file
         try:
-            folder = self._get_item_data(query, contents.get("Folders"))
-            file = self._get_item_data(query, contents.get("Files"))
-        except ValueError:
-            logging.info("best_match_item found no item %s in %s", query, self.name)
+            files = contents.get("Files", [])
+            file = self._get_item_data(query, files)
+        except (SharePointKeyError, ValueError):
+            logging.info("No file '%s' in '%s'. Looking for folders:", query, self.name)
+
+        try:
+            folders = contents.get("Folders", [])
+            folder = self._get_item_data(query, folders)
+            logging.info("Found folder '%s' in %s.", query, self.name)
+        except (SharePointKeyError, ValueError):
+            logging.info("No folder '%s' in '%s'", query, self.name)
+
         item = None
 
         # select the best matching item to build the client with
@@ -157,6 +169,7 @@ class SharePointClient(FolderMixin):
                 self.name,
             )
             raise SharePointError("Factory method '_build_client' failed")
+
         client = SharePointClient(
             self.page,
             self.site_url,
@@ -179,6 +192,8 @@ class SharePointClient(FolderMixin):
         if acra_docs_contents is None:
             raise SharePointError(f"No files and folders found in {acra_docs.name}")
         bizfile = acra_docs._bizfile_recursive_explorer(acra_docs_contents, None)
+        if bizfile is None:
+            raise SharePointError(f"Found no bizfiles at all in {company.name}")
         return bizfile
 
     def get_next_company_name(
@@ -273,7 +288,7 @@ class SharePointClient(FolderMixin):
         self,
         contents: dict[str, List[dict[str, str]]],
         most_recent_file: Optional[dict[str, str]],
-    ) -> dict[str, str]:
+    ) -> dict[str, str] | None:
 
         # pylint: disable=protected-access
         # returns a dictionary of the pdf containing all its attributes
@@ -283,7 +298,10 @@ class SharePointClient(FolderMixin):
         if files:
             for file in files:
                 if not most_recent_file:
-                    if file['Name'].endswith(".pdf") and "profile" in file['Name'].lower():
+                    if (
+                        file["Name"].endswith(".pdf")
+                        and "profile" in file["Name"].lower()
+                    ):
                         most_recent_file = file
                 else:
                     if self._compare_pdfs(file, most_recent_file):
@@ -316,7 +334,7 @@ class SharePointClient(FolderMixin):
                     most_recent_file = folder_client._bizfile_recursive_explorer(
                         folder_contents, most_recent_file
                     )
-
+        """
         if most_recent_file is None:
             logging.error(
                 "Recursive explorer was expecting a file found in %s, but nothing was found",
@@ -326,5 +344,68 @@ class SharePointClient(FolderMixin):
                 f"Recursive explorer was expecting a file found in {self.name}, "
                 "but nothing was found"
             )
+        """
 
         return most_recent_file
+
+    def create_folder(self, folder_name: str) -> "SharePointClient":
+        """Creates a folder inside the client."""
+
+        # pylint: disable=protected-access
+
+        request_digest = response_helpers.get_request_digest(self.page, self.site_url)
+        endpoint = (
+            f"{self.site_url}/_api/web/GetFolderByServerRelativeUrl"
+            f"('{self.server_relative_url}')"
+            f"/Folders/add('{folder_name}')"
+        )
+
+        is_exist = None
+
+        try:
+            is_exist = self._decide_folder(folder_name)
+        except (ValueError, SharePointContractViolation):
+            pass
+
+        if is_exist is not None:
+            logging.error(
+                "Folder '%s' already exists in %s. Please delete manually - "
+                "this script is not authorized to delete items from sharepoint.",
+                folder_name,
+                self.name,
+            )
+            raise SharePointOverwriteError()
+
+        response = self.request(
+            "POST",
+            endpoint,
+            headers={
+                "Accept": "application/json;odata=verbose",
+                "X-RequestDigest": request_digest,
+            },
+        )
+
+        if response.ok:
+            logging.info("Created folder %s in %s", folder_name, self.name)
+        elif response.status == 409:
+            logging.error(
+                "Object %s already exists in %s. Please delete manually - "
+                "this script is not authorized to delete items from sharepoint.",
+                folder_name,
+                self.name,
+            )
+            raise SharePointOverwriteError()
+        else:
+            logging.error(
+                "Attempt to create folder '%s' in %s failed. \n Response status text: %s",
+                folder_name,
+                self.name,
+                response.status_text,
+            )
+            raise SharePointResponseError(
+                f"Attempt to create folder '{folder_name}' in {self.name} failed"
+            )
+
+        folder_self = self._build_client_query(folder_name)
+
+        return folder_self

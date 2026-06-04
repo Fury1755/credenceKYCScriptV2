@@ -5,14 +5,17 @@ This module handles downloading and uploading of excel workbooks.
 from playwright.sync_api import Page
 from openpyxl import Workbook
 from boundary.response_helpers import get_request_digest, request_with_retry
+from core.url_helpers import get_excel_relative_url
 import io
 import os
 import openpyxl
 import logging
 
 
-def download_excel(page: Page, site_url: str, relative_url: str) -> Workbook:
+def download_excel(page: Page, site_url: str, raw_url: str) -> Workbook:
     """downloads the Excel file"""
+
+    relative_url = get_excel_relative_url(raw_url)
     endpoint = (
         f"{site_url}/_api/web/GetFileByServerRelativeUrl('{relative_url}')/$value"
     )
@@ -27,7 +30,7 @@ def download_excel(page: Page, site_url: str, relative_url: str) -> Workbook:
         excel_bytes = response.body()  # loads the bytes of the object into RAM
         excel_buffer = io.BytesIO(excel_bytes)  # wraps the bytes in a file
         wb = openpyxl.load_workbook(excel_buffer)  # load it into a workbook
-        logging.info("Workbook downloaded")
+        logging.info("Workbook downloaded from\n %s", endpoint)
 
         return wb
 
@@ -46,8 +49,9 @@ def upload_excel(page: Page, wb: Workbook, site_url: str, relative_url: str):
     """Uploads an openpyxl Workbook to the url provided"""
 
     # first process the path name
-    folder = os.path.dirname(relative_url)
-    filename = os.path.basename(relative_url)
+    split_url = get_excel_relative_url(relative_url)
+    folder = os.path.dirname(split_url)
+    filename = os.path.basename(split_url)
 
     digest = get_request_digest(page, site_url)
     wb_bytes = workbook_to_bytes(wb)
@@ -58,7 +62,7 @@ def upload_excel(page: Page, wb: Workbook, site_url: str, relative_url: str):
 
     response = request_with_retry(
         page,
-        "PUT",
+        "POST",
         # the new file name is based off the decoded url parameter
         url=api_url,
         headers={
@@ -76,4 +80,9 @@ def upload_excel(page: Page, wb: Workbook, site_url: str, relative_url: str):
         logging.error("Upload failed: %s - %s", response.status, response.text())
         raise RuntimeError(f"Upload failed: {response.status} - {response.text()}")
 
-    logging.info("Workbook uploaded")
+    logging.info(
+        "Workbook uploaded to %s.\nResponse: %s, %s",
+        api_url,
+        response.status_text,
+        response.status,
+    )

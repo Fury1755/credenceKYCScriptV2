@@ -99,6 +99,8 @@ def request_with_retry(
         if response.status not in (429, 503):
             logging.debug("URL: %s, \n Status: %s", url, response.status)
             log_rate_limit(response)
+            if response is None:
+                raise RuntimeError(f"Request to {url} returned None.")
             return response
 
         retry_after = extract_retry_after(response)

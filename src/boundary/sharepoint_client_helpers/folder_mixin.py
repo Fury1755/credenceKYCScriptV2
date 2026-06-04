@@ -55,7 +55,8 @@ class FolderMixin:
         """Returns the TimeLastModified property."""
 
     @abstractmethod
-    def _request(self, method: str, url: str, **kwargs) -> APIResponse: ...
+    def request(self, method: str, url: str, **kwargs) -> APIResponse:
+        """Wrapper around request_with_retry encapsulated in client."""
 
     # We make walk_folder a private method so that it doesn't leak APIResponse to anything outside
     def _walk_folder(self) -> APIResponse:
@@ -93,7 +94,7 @@ class FolderMixin:
         )
 
         logging.debug("Endpoint: %s", endpoint)
-        response = self._request(
+        response = self.request(
             "GET", endpoint, headers={"Accept": "application/json;odata=verbose"}
         )
 
@@ -253,10 +254,6 @@ class FolderMixin:
             return False
         # ISO formats for date times are lexicographically comparable
         if file["TimeLastModified"] >= most_recent_file["TimeLastModified"]:
-            logging.info(
-                "Updated TimeLastModified to %s", file["TimeLastModified"]
-            )
+            logging.info("Updated TimeLastModified to %s", file["TimeLastModified"])
             return True
         return False
-
-

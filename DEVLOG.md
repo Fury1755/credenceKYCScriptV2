@@ -34,6 +34,11 @@
 - refactored functions into 'core', 'boundary' and 'orchestration' folders
 
 ## 2026-06-03
-- created 'pdf_processing.py' and 'pdf_io.py': parses pdf business files
+- created 'pdf_processing.py' and 'pdf_io.py': parses pdfs using pdfplumber
 - implemented recursive folder searching for business files
 - switched to cloakbrowser to bypass bot detection
+
+## 2026-06-04
+- added 'search.py': searches for individuals and updates results
+- added 'upload_excel' and 'append_excel': writes results to excel file
+The script is now functional!

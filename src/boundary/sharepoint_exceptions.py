@@ -34,3 +34,7 @@ class SharePointAttributeError(SharePointError):
     """
     Item attributes not accessible when initializing an instance of SharePointClient.
     """
+
+
+class SharePointOverwriteError(SharePointError):
+    """Attempted to overwrite existing folder/file"""
