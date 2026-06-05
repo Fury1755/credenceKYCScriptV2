@@ -9,16 +9,20 @@ from typing import List
 import logging
 
 
-def best_match_item(query: str, items: List[str]) -> str:
+def best_match_item(query: str, items: List[str], cutoff: int = 80) -> str:
     """Returns a single matching string from a list of strings."""
+
+    if query == "":
+        logging.error("Query %s passed to best_match_item is an empty string!", query)
+        raise ValueError("Empty string passed to best_match_item")
 
     if not items:
         logging.error("Argument 'items' passed to best_match_items is None")
-        raise RuntimeError("Argument 'items' passed to best_match_items is None")
+        raise ValueError("Argument 'items' passed to best_match_items is None")
 
     # process.extract returns a List of tuples corresponding to the limit
     matches: List[tuple] = rapidfuzz.process.extract(
-        query, items, limit=1, score_cutoff=80
+        query, items, limit=1, score_cutoff=cutoff
     )
     if not matches:
         logging.debug(
@@ -26,7 +30,7 @@ def best_match_item(query: str, items: List[str]) -> str:
             query,
             items,
         )
-        raise ValueError("No match found by best_match_item")
+        raise LookupError("No match found by best_match_item")
     return items[matches[0][2]]
 
 

@@ -42,3 +42,8 @@
 - added 'search.py': searches for individuals and updates results
 - added 'upload_excel' and 'append_excel': writes results to excel file
 The script is now functional!
+
+## 2026-06-05
+- deployed the script
+- patched minor bugs processPdf
+- implemented first unit test using pytest and hypothesis
