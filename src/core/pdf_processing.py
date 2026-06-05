@@ -93,7 +93,7 @@ def process_pdf(response_pdf) -> List[Individual]:
                                     table[r][c] = cell.strip()
                                 else:
                                     table[r][c] = re.sub(r"\n.*", "", cell)
-            print(table)
+
             return table
 
         def officer_page(pg: Page):
@@ -264,7 +264,20 @@ def process_pdf(response_pdf) -> List[Individual]:
                 if officer_by_name is not None:
                     if shareholder.name in officer_by_name:
                         shareholder.role = "SHAREHOLDER/DIRECTOR"
+                        continue
                     else:
-                        shareholder.role = "SHAREHOLDER"
-                        output.append(shareholder)
-        return output
+                        shareholder.role = "SHAREHOLDER" # messy logic. rewrite when free
+                else:
+                    shareholder.role = "SHAREHOLDER"
+
+                output.append(shareholder)
+
+        # deduplicate output again because my logic is not perfect
+        unique_output = []
+        seen = {}
+        for individual in output:
+            key = (individual.name, individual.role)
+            if key not in seen:
+                seen[key] = True
+                unique_output.append(individual)
+        return unique_output

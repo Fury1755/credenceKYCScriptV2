@@ -299,7 +299,7 @@ class SharePointClient(FolderMixin):
             for file in files:
                 if not most_recent_file:
                     if (
-                        file["Name"].endswith(".pdf")
+                        file["Name"].lower().endswith(".pdf")
                         and "profile" in file["Name"].lower()
                     ):
                         most_recent_file = file
@@ -318,7 +318,7 @@ class SharePointClient(FolderMixin):
 
         if folders:
             for folder in folders:
-                logging.info("Entering folder %s", folder["Name"])
+                logging.info("Entering folder '%s' in '%s'", folder["Name"], self.name)
                 folder_client = SharePointClient(
                     self.page,
                     self.site_url,
@@ -334,17 +334,6 @@ class SharePointClient(FolderMixin):
                     most_recent_file = folder_client._bizfile_recursive_explorer(
                         folder_contents, most_recent_file
                     )
-        """
-        if most_recent_file is None:
-            logging.error(
-                "Recursive explorer was expecting a file found in %s, but nothing was found",
-                self.name,
-            )
-            raise SharePointError(
-                f"Recursive explorer was expecting a file found in {self.name}, "
-                "but nothing was found"
-            )
-        """
 
         return most_recent_file
 
@@ -360,21 +349,27 @@ class SharePointClient(FolderMixin):
             f"/Folders/add('{folder_name}')"
         )
 
-        is_exist = None
 
-        try:
-            is_exist = self._decide_folder(folder_name)
-        except (ValueError, SharePointContractViolation):
-            pass
 
-        if is_exist is not None:
-            logging.error(
-                "Folder '%s' already exists in %s. Please delete manually - "
-                "this script is not authorized to delete items from sharepoint.",
-                folder_name,
-                self.name,
-            )
-            raise SharePointOverwriteError()
+        self_response = self._walk_folder()
+        self_data = self._unwrap_response(self_response)
+        # oh my god thank goodness this works
+        # note to self: REWRITE THIS PLS
+        self_folders = self._get_folders(self_data)
+        if self_folders is None:
+            logging.error("Somehow, some way, create_folder found an existing folder in" \
+            " a newly created folder. Before " \
+            "anything was added to it. This should never happen.")
+            raise SharePointError
+        for folder in self_folders:
+            if folder_name in folder:
+                logging.error(
+                    "Folder '%s' already exists in %s. Please delete manually - "
+                    "this script is not authorized to delete items from sharepoint.",
+                    folder_name,
+                    self.name,
+                )
+                raise SharePointOverwriteError()
 
         response = self.request(
             "POST",

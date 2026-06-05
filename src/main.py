@@ -65,9 +65,6 @@ bizfile = current_company.get_bizfile(current_company)
 
 kah_list = get_individuals(page, config.SITE_URL, bizfile)
 
-for individual in kah_list:
-    print(individual.name)
-
 sentroweb_client = current_company._build_client_query("Sentroweb Search")  # pylint: disable=protected-access
 
 go_to_sentroweb(sentroweb_client)
