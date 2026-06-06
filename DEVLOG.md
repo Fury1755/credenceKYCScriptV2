@@ -44,6 +44,6 @@
 The script is now functional!
 
 ## 2026-06-05
-- deployed the script
-- patched minor bugs processPdf
-- implemented first unit test using pytest and hypothesis
+- deployed and tested the script (3 times faster than v1)
+- patched logic bugs in 'pdf_procesing.py'
+- created 'test_string_helpers.py': first unit test using pytest and hypothesis
