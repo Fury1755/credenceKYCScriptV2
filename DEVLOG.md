@@ -47,3 +47,6 @@ The script is now functional!
 - deployed and tested the script (3 times faster than v1)
 - patched logic bugs in 'pdf_procesing.py'
 - created 'test_string_helpers.py': first unit test using pytest and hypothesis
+
+## 2026-06-06
+- completed writing property tests for 'src/core/string_helpers.py' and patched exposed weaknesses (duplicates, falsy inputs)
