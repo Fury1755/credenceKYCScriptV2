@@ -81,6 +81,11 @@ def request_with_retry(
     if no Retry-After is found.
     """
 
+    # I intentionally left error handling out of this function, for
+    # - separation of concerns (purely retry, no error handling)
+    # - preserves flexibilities in handling different status codes differently
+    # which promote reusability.
+
     # range(max_retries) is 0 indexed. so range = 0, 1, 2, 3, 4 for max_retries = 5.
     for attempt in range(max_retries):
         if method == "POST":
