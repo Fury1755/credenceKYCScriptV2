@@ -34,7 +34,7 @@ def download_excel(page: Page, site_url: str, raw_url: str) -> Workbook:
 
         return wb
 
-    logging.error("Download failed: %s - %s", response.status, response.text()[:200])
+    logging.error("Download failed: %s - %s", response.status, response.text())
     raise RuntimeError(f"Download failed: {response.status} - {response.text()}")
 
 
