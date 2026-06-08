@@ -2,12 +2,13 @@
 
 import pdfplumber
 import re
+import io
 from pdfplumber.page import Page
 from core.individual import Individual
 from typing import List
 
 
-def process_pdf(response_pdf) -> List[Individual]:
+def process_pdf(response_pdf: io.BytesIO) -> List[Individual]:
     """Reads the pdf file and returns a list of Individuals"""
     with pdfplumber.open(response_pdf) as pdf:
 
@@ -266,7 +267,9 @@ def process_pdf(response_pdf) -> List[Individual]:
                         shareholder.role = "SHAREHOLDER/DIRECTOR"
                         continue
                     else:
-                        shareholder.role = "SHAREHOLDER" # messy logic. rewrite when free
+                        shareholder.role = (
+                            "SHAREHOLDER"  # messy logic. rewrite when free
+                        )
                 else:
                     shareholder.role = "SHAREHOLDER"
 
