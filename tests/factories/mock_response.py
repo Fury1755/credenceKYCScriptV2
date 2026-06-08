@@ -33,19 +33,21 @@ class MockAPIResponse:
         '''Returns bool just like response.ok'''
         return self._ok
 
+    @property
+    def status(self) -> int:
+        '''Returns status as int'''
+        return self._status
+
+    @property
+    def status_text(self) -> str:
+        '''Returns status text as str'''
+        return self._status_text
+
     def json(self) -> dict | None:
         '''Returns json response.'''
         # we don't use @property because
         #  we want to simulate the actual ()
         return self._json
-
-    def status(self) -> int:
-        '''Returns status as int'''
-        return self._status
-
-    def status_text(self) -> str:
-        '''Returns status text as str'''
-        return self._status_text
 
     def body(self) -> bytes:
         '''Returns body as bytes'''
