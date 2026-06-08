@@ -18,7 +18,6 @@ from boundary.sharepoint_exceptions import (
     SharePointError,
     SharePointKeyError,
     SharePointOverwriteError,
-    SharePointContractViolation,
 )
 from boundary import response_helpers
 from core import string_helpers
