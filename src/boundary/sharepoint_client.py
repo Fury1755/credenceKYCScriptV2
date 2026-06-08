@@ -195,7 +195,7 @@ class SharePointClient(FolderMixin):
             raise SharePointError(f"Found no bizfiles at all in {company.name}")
         return bizfile
 
-    def get_next_company_name(
+    def get_next_company(
         self, previous_company: str
     ) -> "SharePointClient":  # this is a public method
         """
@@ -348,17 +348,17 @@ class SharePointClient(FolderMixin):
             f"/Folders/add('{folder_name}')"
         )
 
-
-
         self_response = self._walk_folder()
         self_data = self._unwrap_response(self_response)
         # oh my god thank goodness this works
         # note to self: REWRITE THIS PLS
         self_folders = self._get_folders(self_data)
         if self_folders is None:
-            logging.error("Somehow, some way, create_folder found an existing folder in" \
-            " a newly created folder. Before " \
-            "anything was added to it. This should never happen.")
+            logging.error(
+                "Somehow, some way, create_folder found an existing folder in"
+                " a newly created folder. Before "
+                "anything was added to it. This should never happen."
+            )
             raise SharePointError
         for folder in self_folders:
             if folder_name in folder:
