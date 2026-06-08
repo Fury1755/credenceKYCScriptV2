@@ -1,10 +1,9 @@
 """This module handles the downloading of pdfs."""
 
 import io
-from boundary import response_helpers
 from boundary.sharepoint_client import SharePointClient
 from core.individual import Individual
-from boundary.response_helpers import get_request_digest
+from boundary.response_helpers import get_request_digest, request_with_retry
 from boundary.sharepoint_exceptions import SharePointResponseError
 from playwright.sync_api import Page, APIResponse
 from typing import List
@@ -27,10 +26,20 @@ def download_pdf(page: Page, site_url: str, file_item: dict[str, str]):
         f"{site_url}/_api/web/GetFileByServerRelativeUrl"
         f"('{file_item['ServerRelativeUrl']}')/$value"
     )
-    response = response_helpers.request_with_retry(
+    response = request_with_retry(
         page, "GET", endpoint, headers={"Accept": "application/json;odata=verbose"}
     )
 
+    if not response.ok:
+        logging.error(
+            "Response: %s - %s - %s",
+            response.status,
+            response.text(),
+            endpoint,
+        )
+        raise SharePointResponseError(
+            f"PDF download failed - response: {response.status}"
+        )
     return pdf_to_bytes(response)
 
 
