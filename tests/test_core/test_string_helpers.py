@@ -15,7 +15,7 @@ import pytest
 def test_exact_match_is_returned(query: str, extra: List[str]):
     """
     This test tests whether best_match_item
-    consistently returns the item it's expected to match.
+    consistently returns the item it expects to match.
     """
     # we set min_size = 1 because matching empty strings is not meaningful.
 
@@ -31,13 +31,14 @@ def test_exact_match_is_returned(query: str, extra: List[str]):
             return
     assert result == query
 
+
 @settings(max_examples=999)
 @given(st.text(), st.lists(st.text()))
 def test_next_name_is_returned(last_name: str, extra: List[str]):
-    '''
-    Tests if the function get_next_name returns the next lexicographical
-    name in a list.
-    '''
+    """
+    Tests if the function get_next_name returns the next name in a list
+    according to lexicographical order.
+    """
 
     # this guarantees extra will never be empty
     extra.append(last_name)
@@ -56,18 +57,20 @@ def test_next_name_is_returned(last_name: str, extra: List[str]):
 
     # check if last_name is not the last element in the list,
     #  so that we don't go out of bounds when getting next_name_index
-    if last_name != sorted_list[-1]: # len is not zero indexed!
+    if last_name != sorted_list[-1]:  # len is not zero indexed!
         next_name_index = sorted_list.index(last_name) + 1
 
     def is_fail(last_name: str, sorted_list: List[str]) -> bool:
-        '''Runs when the test function throws ValueError.
+        """
+        Runs when the test function throws ValueError.
         Returns False if the test fails
-        (e.g. errors are thrown when it shouldn't be thrown)'''
+        (e.g. errors are thrown when it shouldn't be thrown)
+        """
 
         # i feel this is more robust than throwing everything in the except block
 
         # if last_name is the last element, ValueError is allowed. return True.
-        if last_name == sorted_list[-1]: # -1 is the index of last item
+        if last_name == sorted_list[-1]:  # -1 is the index of last item
             return True
 
         # if last_name and sorted_list are invalid inputs, ValueError is allowed.
