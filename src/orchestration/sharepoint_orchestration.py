@@ -29,7 +29,7 @@ def get_current_company(
         "1",
     )
 
-    current_company = a_to_z_list.get_next_company_name(previous_company)
+    current_company = a_to_z_list.get_next_company(previous_company)
     logging.info(
         "Successfully got next company '%s' as SharePointClient", current_company.name
     )
