@@ -9,7 +9,8 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()  # gives the script access to the .env file in project root
-# we use os.environ because these configs are required, as opposed to os.getenv which can return None
+# we use os.environ because these configs are required, as opposed to
+#  os.getenv which can return None
 
 # this is the sharepoint site URL
 SITE_URL = os.environ["SITE_URL"]
