@@ -236,9 +236,14 @@ class SharePointClient(FolderMixin):
         current_company_name = string_helpers.get_next_name(
             previous_company, company_names
         )
+
+        current_company_folders = self._get_folders(
+            self._unwrap_response(current_letter_response)
+        )
+
         current_company_data = self._get_item_data(
             current_company_name,
-            self._get_folders(self._unwrap_response(current_letter_response)),
+            current_company_folders,
         )
 
         if not current_company_data:
