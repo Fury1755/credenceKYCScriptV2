@@ -140,7 +140,7 @@ class FolderMixin:
     def _get_item_data(
         self, query: str, items: Optional[List[dict[str, str]]]
     ) -> Optional[dict[str, str]]:
-        """Returns the an item with a key 'Name' matching the query.
+        """Returns an item with a key 'Name' matching the query.
         Takes a list of dictionaries as arguments."""
         if not items:
             return None

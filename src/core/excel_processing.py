@@ -12,7 +12,7 @@ from typing import Union, Optional, List, TYPE_CHECKING
 import logging
 
 if TYPE_CHECKING:
-    from boundary.sharepoint_client import SharePointClient
+    from boundary.sharepoint_clients.sharepoint_client import SharePointClient
 
 
 def find_worksheet(wb: Workbook, current_letter: str) -> Worksheet:

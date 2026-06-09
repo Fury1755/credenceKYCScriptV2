@@ -1,7 +1,7 @@
 """This module handles the downloading of pdfs."""
 
 import io
-from boundary.sharepoint_client import SharePointClient
+from boundary.sharepoint_clients.sharepoint_client import SharePointClient
 from core.individual import Individual
 from boundary.response_helpers import get_request_digest, request_with_retry
 from boundary.sharepoint_exceptions import SharePointResponseError
