@@ -128,16 +128,19 @@ class SharePointClient(FolderMixin):
         a name that best matches the query.
 
             Args:
-                query(str): The query you want the resulting client to match
+                query (str): The query you want the resulting client to match
 
             Returns:
                 A SharePointClient containing all it's required attributes, derived from
                 the parent folder
 
             Raises:
-                SharePointError: If no files/folders were found in the client
-                * implicitly assumes SharePoint folder responses will always be properly
-                structured
+                SharePointKeyError: If no files/folders were found in the client
+                SharePointError: If files/folders were found, but none matched the query
+
+            Note:
+                The error handling implicitly assumes SharePoint
+                folder responses are always properly structured
         """
 
         response = self._walk_folder()
@@ -272,14 +275,14 @@ class SharePointClient(FolderMixin):
             )
             return current_company
 
-        except Exception as e:
+        except (SharePointKeyError, SharePointError) as e:
             logging.error(
                 "Could not find required client attributes in object %s."
                 "\n Previous folder name: %s",
                 current_company_name,
                 current_letter_list.name,
             )
-            raise SharePointKeyError(
+            raise SharePointError(
                 f"Could not find item attributes in object {current_company_name}"
             ) from e
 
@@ -337,7 +340,19 @@ class SharePointClient(FolderMixin):
         return most_recent_file
 
     def create_folder(self, folder_name: str) -> "SharePointClient":
-        """Creates a folder inside the client."""
+        """
+        Creates a folder inside the client.
+
+        Args:
+            folder_name (str): The name of the folder you want to create
+
+        Returns:
+            A SharePointClient instance of the created folder
+
+        Raises:
+            SharePointOverwriteError: If there is an existing folder with the same name
+            SharePointResponseError: If bad response when adding a new folder
+        """
 
         # pylint: disable=protected-access
 
