@@ -187,7 +187,8 @@ class SharePointClient(FolderMixin):
 
         if item is None:
             logging.error(
-                "Build client failed, no folders and files were found matching %s in %s",
+                "Build client failed, no folders and files "
+                "were found matching %s in %s",
                 query,
                 self.name,
             )
@@ -238,7 +239,7 @@ class SharePointClient(FolderMixin):
             # instantiates a single letter folder such as 'B' as a client
             self.page,
             self.site_url,
-            current_letter_relative,  # the only thing that matters in this client instance
+            current_letter_relative,  # the only thing that matters here
             current_letter,
             self.time_last_modified,  #  inaccurate, doesn't matter
             str(1),  # we know this is a folder
@@ -268,7 +269,8 @@ class SharePointClient(FolderMixin):
 
         if not current_company_data:
             raise SharePointError(
-                f"get_item_data on current company {current_company_name} returned nothing"
+                f"get_item_data on current company {current_company_name} returned"
+                "nothing"
             )
 
         try:
@@ -368,6 +370,7 @@ class SharePointClient(FolderMixin):
         self_response = self._walk_folder()
         self_data = self._parser.unwrap_response(self_response)
         self_folders = self._get_folders(self_data)
+
         if self_folders is None:
             logging.error(
                 "Somehow, some way, create_folder found an existing folder in"
@@ -375,6 +378,7 @@ class SharePointClient(FolderMixin):
                 "anything was added to it. This should never happen."
             )
             raise SharePointError
+
         for folder in self_folders:
             if folder.get(folder_name, None) is not None:
                 logging.error(
@@ -406,7 +410,8 @@ class SharePointClient(FolderMixin):
             raise SharePointOverwriteError()
         else:
             logging.error(
-                "Attempt to create folder '%s' in %s failed. \n Response status text: %s",
+                "Attempt to create folder '%s' in %s failed. "
+                "\n Response status text: %s",
                 folder_name,
                 self.name,
                 response.status_text,
@@ -441,7 +446,8 @@ class SharePointClient(FolderMixin):
                 f"Attempted to access non-existing folders and files in '{self.name}'"
             )
 
-        # According to the REST API, calling with $expand guarantees wrapping in ['results']
+        # According to the REST API, calling with $expand
+        #  guarantees wrapping in ['results']
         name_list = [item["Name"] for item in folders]
         match = string_helpers.best_match_item(query, name_list)
 
@@ -458,7 +464,8 @@ class SharePointClient(FolderMixin):
                 query,
             )
             raise SharePointDuplicateError(
-                f"More than one item found in {str(response.json())[:100]} \nQuery: {match}"
+                f"More than one item found in {str(response.json())[:100]}"
+                f"\nQuery: {match}"
             )
 
         return match_item[0]["ServerRelativeUrl"]
