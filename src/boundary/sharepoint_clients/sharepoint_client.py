@@ -18,6 +18,8 @@ from boundary.sharepoint_exceptions import (
     SharePointError,
     SharePointKeyError,
     SharePointOverwriteError,
+    SharePointContractViolation,
+    SharePointDuplicateError,
 )
 from boundary import response_helpers
 from core import string_helpers
@@ -144,7 +146,7 @@ class SharePointClient(FolderMixin):
         """
 
         response = self._walk_folder()
-        contents = self._get_folders_and_files(response)
+        contents = self._parser.get_folders_and_files(response)
         if not contents:
             raise SharePointKeyError(
                 f"Build client found no folders or files in {self.name}"
@@ -209,7 +211,7 @@ class SharePointClient(FolderMixin):
         # pylint: disable=protected-access
         acra_docs = company._build_client_query("ACRA Docs")
         acra_docs_response = acra_docs._walk_folder()
-        acra_docs_contents = acra_docs._get_folders_and_files(acra_docs_response)
+        acra_docs_contents = acra_docs._parser.get_folders_and_files(acra_docs_response)
         if acra_docs_contents is None:
             raise SharePointError(f"No files and folders found in {acra_docs.name}")
         bizfile = acra_docs._bizfile_recursive_explorer(acra_docs_contents, None)
@@ -243,7 +245,7 @@ class SharePointClient(FolderMixin):
         )
 
         current_letter_response = current_letter_list._walk_folder()  # pylint: disable=protected-access
-        current_letter_contents = current_letter_list._get_folders_and_files(  # pylint: disable=protected-access
+        current_letter_contents = current_letter_list._parser.get_folders_and_files(  # pylint: disable=protected-access
             current_letter_response
         )
 
@@ -256,7 +258,7 @@ class SharePointClient(FolderMixin):
         )
 
         current_company_folders = self._get_folders(
-            self._unwrap_response(current_letter_response)
+            self._parser.unwrap_response(current_letter_response)
         )
 
         current_company_data = self._get_item_data(
@@ -329,7 +331,7 @@ class SharePointClient(FolderMixin):
                     folder["TimeLastModified"],
                     str(self._parse_item_type(folder)),
                 )
-                folder_contents = folder_client._get_folders_and_files(
+                folder_contents = folder_client._parser.get_folders_and_files(
                     folder_client._walk_folder()
                 )
                 if folder_contents:
@@ -364,9 +366,7 @@ class SharePointClient(FolderMixin):
         )
 
         self_response = self._walk_folder()
-        self_data = self._unwrap_response(self_response)
-        # oh my god thank goodness this works
-        # note to self: REWRITE THIS PLS
+        self_data = self._parser.unwrap_response(self_response)
         self_folders = self._get_folders(self_data)
         if self_folders is None:
             logging.error(
@@ -376,7 +376,7 @@ class SharePointClient(FolderMixin):
             )
             raise SharePointError
         for folder in self_folders:
-            if folder_name in folder:
+            if folder.get(folder_name, None) is not None:
                 logging.error(
                     "Folder '%s' already exists in %s. Please delete manually - "
                     "this script is not authorized to delete items from sharepoint.",
@@ -418,3 +418,47 @@ class SharePointClient(FolderMixin):
         folder_self = self._build_client_query(folder_name)
 
         return folder_self
+
+    def _decide_folder(self, query: str) -> str:
+        """
+        Takes the response of a folder directory
+        and returns a server relative id_value corresponding to a item whose
+        name is closest to the matching query.
+        """
+
+        response = self._walk_folder()
+        results = self._parser.get_folders_and_files(response)
+
+        if results is not None:
+            if "Folders" in results:
+                folders = results["Folders"]
+            else:
+                raise SharePointContractViolation(
+                    f"Attempted to access non-existing 'Folders' objects in {self.name}"
+                )
+        else:
+            raise SharePointContractViolation(
+                f"Attempted to access non-existing folders and files in '{self.name}'"
+            )
+
+        # According to the REST API, calling with $expand guarantees wrapping in ['results']
+        name_list = [item["Name"] for item in folders]
+        match = string_helpers.best_match_item(query, name_list)
+
+        # this *should* return a List with a single item.
+        # Nevertheless, we guard against it.
+        match_item = [item for item in folders if item["Name"] == match]
+
+        if len(match_item) != 1:
+            logging.error(
+                "Expected 1 match in folder '%s', got %d matches to the query string. "
+                "\nQuery: %s",
+                self.name,
+                len(match_item),
+                query,
+            )
+            raise SharePointDuplicateError(
+                f"More than one item found in {str(response.json())[:100]} \nQuery: {match}"
+            )
+
+        return match_item[0]["ServerRelativeUrl"]

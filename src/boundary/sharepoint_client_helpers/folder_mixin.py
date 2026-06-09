@@ -4,7 +4,6 @@ from playwright.sync_api import APIResponse, Page
 from boundary.sharepoint_exceptions import (
     SharePointAttributeError,
     SharePointContractViolation,
-    SharePointDuplicateError,
     SharePointKeyError,
 )
 
@@ -100,25 +99,6 @@ class FolderMixin:
 
         return response
 
-    def _unwrap_response(
-        self, response: APIResponse
-    ) -> dict[str, dict[str, List[dict[str, str]]]]:
-        """Unwraps 'd' from the APIResponse's json"""
-
-        # defensive programming habit: load once: Multiple reads are performance intensive
-        #  and fragile
-        response_json = response.json()
-
-        # check if the "d" wrapper exists. It's inconsistent across SharePoint responses.
-        if "d" in response_json:
-            response_data = response_json["d"]
-            logging.debug("Key 'd' found in response '%s'", self.name)
-        else:
-            response_data = response_json
-            logging.debug("No key 'd' in response '%s'", self.name)
-
-        return response_data
-
     def _get_folders(
         self, response_data: dict[str, dict[str, List[dict[str, str]]]]
     ) -> Optional[List[dict[str, str]]]:
@@ -151,77 +131,6 @@ class FolderMixin:
                 return item
         logging.error("Query %s not found in %s", query, self.name)
         raise SharePointKeyError(f"Query {query} not found in client '{self.name}'.")
-
-    def _get_folders_and_files(
-        self, response: APIResponse
-    ) -> Optional[dict[str, List[dict[str, str]]]]:
-        """Returns a dictionary of 'Files' and 'Folders' from a SharePoint response."""
-
-        response_data = self._unwrap_response(response)
-
-        output = {}
-
-        # provide empty Dicts and Lists to default to if nothing is found;
-        #  enables more flexible custom error handling.
-        # Otherwise, KeyError will be thrown instead (which is what happened in config.py)
-        # We assume results will exist because we always request with application;odata=verbose
-        folders = self._get_folders(response_data)
-        files = self._get_files(response_data)
-
-        if files:
-            output["Files"] = files
-        if folders:
-            output["Folders"] = folders
-
-        if not output:
-            # We don't raise an error; let the caller handle the None
-            logging.debug("Output from get_folders_and_files '%s' is None", self.name)
-
-        return output
-
-    def _decide_folder(self, query: str) -> str:
-        """
-        Takes the response of a folder directory
-        and returns a server relative id_value corresponding to a item whose
-        name is closest to the matching query.
-        """
-
-        response = self._walk_folder()
-        results = self._get_folders_and_files(response)
-
-        if results is not None:
-            if "Folders" in results:
-                folders = results["Folders"]
-            else:
-                raise SharePointContractViolation(
-                    f"Attempted to access non-existing 'Folders' objects in {self.name}"
-                )
-        else:
-            raise SharePointContractViolation(
-                f"Attempted to access non-existing folders and files in '{self.name}'"
-            )
-
-        # According to the REST API, calling with $expand guarantees wrapping in ['results']
-        name_list = [item["Name"] for item in folders]
-        match = string_helpers.best_match_item(query, name_list)
-
-        # this *should* return a List with a single item.
-        # Nevertheless, we guard against it.
-        match_item = [item for item in folders if item["Name"] == match]
-
-        if len(match_item) != 1:
-            logging.error(
-                "Expected 1 match in folder '%s', got %d matches to the query string. "
-                "\nQuery: %s",
-                self.name,
-                len(match_item),
-                query,
-            )
-            raise SharePointDuplicateError(
-                f"More than one item found in {str(response.json())[:100]} \nQuery: {match}"
-            )
-
-        return match_item[0]["ServerRelativeUrl"]
 
     def _parse_item_type(self, item_data: dict) -> int:
         """Takes a SharePoint item's item_data as input and returns its type"""

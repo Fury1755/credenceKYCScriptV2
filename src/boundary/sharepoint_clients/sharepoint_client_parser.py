@@ -4,7 +4,8 @@ responsible for pure functions and logic within a SharePointClient
 instance.
 """
 
-from typing import List
+from playwright.sync_api import APIResponse
+from typing import List, Optional
 import logging
 
 
@@ -13,6 +14,64 @@ class SharePointClientParser:
     This class is a composition of SharePointClient. It handles
     pure functions and is trusted code.
     """
+
+    def unwrap_response(
+        self, response: APIResponse
+    ) -> dict[str, dict[str, List[dict[str, str]]]]:
+        """Unwraps 'd' from the APIResponse's json"""
+
+        # defensive programming habit: load once: Multiple reads are performance intensive
+        #  and fragile
+        response_json = response.json()
+
+        # check if the "d" wrapper exists. It's inconsistent across SharePoint responses.
+        if "d" in response_json:
+            response_data = response_json["d"]
+        else:
+            response_data = response_json
+
+        return response_data
+
+    def get_folders_and_files(
+        self, response: APIResponse
+    ) -> Optional[dict[str, List[dict[str, str]]]]:
+        """Returns a dictionary of 'Files' and 'Folders' from a SharePoint response."""
+
+        response_data = self.unwrap_response(response)
+
+        output = {}
+
+        # provide empty Dicts and Lists to default to if nothing is found;
+        #  enables more flexible custom error handling.
+        # Otherwise, KeyError will be thrown instead (which is what happened in config.py)
+        # We assume results will exist because we always request with application;odata=verbose
+        folders = self._get_folders(response_data)
+        files = self._get_files(response_data)
+
+        if files:
+            output["Files"] = files
+        if folders:
+            output["Folders"] = folders
+
+        return output
+
+    def _get_folders(
+        self, response_data: dict[str, dict[str, List[dict[str, str]]]]
+    ) -> Optional[List[dict[str, str]]]:
+        """Returns a List 'Folders' from an unwrapped response"""
+        # provide empty Dicts and Lists to default to if nothing is found;
+        #  enables more flexible custom error handling.
+        # Otherwise, KeyError will be thrown instead (which is what happened in config.py)
+        # We assume results will exist because we always request with application;odata=verbose
+        folders = response_data.get("Folders", {}).get("results", [])
+        return folders
+
+    def _get_files(
+        self, response_data: dict[str, dict[str, List[dict[str, str]]]]
+    ) -> Optional[List[dict[str, str]]]:
+        """Returns a List 'Files' from an unwrapped response"""
+        files = response_data.get("Files", {}).get("results", [])
+        return files
 
     def get_folder_names_from_contents(
         self,
