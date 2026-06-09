@@ -14,11 +14,30 @@ class SharePointClientParser:
     pure functions and is trusted code.
     """
 
-    def _get_folder_names_from_contents(
+    def get_folder_names_from_contents(
         self,
-        contents: dict[str, List[dict[str, str]]],
+        contents: dict[str, List[dict[str, str]]] | None,
     ) -> List[str]:
-        """Returns folder names from contents."""
+        """
+        Returns folder names from contents.
+
+        Args:
+            contents (dict): A parsed JSON response from SharePoint's
+                `_get_folders_and_files` (the unwrapped 'd' object)
+
+        Returns:
+            List[str]: A list of folder names.
+
+        Raises:
+            KeyError: if the 'Folders' or 'Name' key(s) is/are missing.
+            ValueError: if the argument passed is falsy.
+
+        """
+
+        # precondition: contents must be true
+        if not contents:
+            logging.error("Empty dict/none passed to _get_folder_names_from_contents")
+            raise ValueError
 
         # precondition: 'Folders' must exist
         folders = contents.get("Folders", {})

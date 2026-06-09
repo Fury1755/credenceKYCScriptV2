@@ -22,6 +22,7 @@ from boundary.sharepoint_exceptions import (
 from boundary import response_helpers
 from core import string_helpers
 from boundary.sharepoint_client_helpers.folder_mixin import FolderMixin
+from boundary.sharepoint_clients.sharepoint_client_parser import SharePointClientParser
 from typing import Optional, List
 import logging
 
@@ -51,6 +52,9 @@ class SharePointClient(FolderMixin):
         self._name = name
         self._time_last_modified = time_last_modified
         self._file_system_object_type = file_system_object_type
+
+        # every client has it's own parser by default, no need to pass as argument
+        self._parser = SharePointClientParser()
 
     # We introduce a decorator '@'.
     # A decorator is just a way of shortening functions for the sake
@@ -225,33 +229,9 @@ class SharePointClient(FolderMixin):
             current_letter_response
         )
 
-        company_names = []
-        if current_letter_contents:
-            try:
-                folders = current_letter_contents["Folders"]
-                if folders:
-                    try:
-                        company_names = [item["Name"] for item in folders]
-                    except Exception as e:
-                        logging.error(
-                            "No property 'Name' found in the following items:"
-                            "%s\nFolder name '%s':\n Derived from previous company name '%s'",
-                            [item for item in folders],
-                            current_letter,
-                            previous_company,
-                        )
-                        raise SharePointKeyError(
-                            f"'Folders' in '{current_letter_list.name}'"
-                            "has no attribute 'Name'"
-                        ) from e
-            except Exception as e:
-                logging.error(
-                    "Current letter folder %s contains no folders", current_letter
-                )
-                raise SharePointKeyError(
-                    f"Current letter folder '{current_letter}' "
-                    "does not contain any folders."
-                ) from e
+        company_names = self._parser.get_folder_names_from_contents(
+            current_letter_contents
+        )
 
         current_company_name = string_helpers.get_next_name(
             previous_company, company_names
