@@ -123,7 +123,22 @@ class SharePointClient(FolderMixin):
         return response
 
     def _build_client_query(self, query: str) -> "SharePointClient":
-        """Builds a SharePointClient with a name closest to the query."""
+        """
+        Builds a SharePointClient for one of it's files OR folders that contains
+        a name that best matches the query.
+
+            Args:
+                query(str): The query you want the resulting client to match
+
+            Returns:
+                A SharePointClient containing all it's required attributes, derived from
+                the parent folder
+
+            Raises:
+                SharePointError: If no files/folders were found in the client
+                * implicitly assumes SharePoint folder responses will always be properly
+                structured
+        """
 
         response = self._walk_folder()
         contents = self._get_folders_and_files(response)
@@ -179,7 +194,7 @@ class SharePointClient(FolderMixin):
             item["ServerRelativeUrl"],
             item["Name"],
             item["TimeLastModified"],
-            # I don't know if item is the correct type. If it works then it is.
+            # file system object type
             str(self._parse_item_type(item)),
         )
 
