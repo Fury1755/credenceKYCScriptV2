@@ -19,8 +19,11 @@ def best_match_item(query: str, choices: List[str], cutoff: int = 80) -> str:
 
     # DbC: assert that empty strings [] and None should not be passed to 'choices'
     if not choices:
-        logging.error("Empty list/None passed to best_match_item! Query: '%s'" \
-        ", choices: %s", query, choices)
+        logging.error(
+            "Empty list/None passed to best_match_item! Query: '%s', choices: %s",
+            query,
+            choices,
+        )
         raise ValueError("Argument 'choices' passed to best_match_choices is falsy")
 
     # process.extract returns a List of tuples corresponding to the limit
@@ -46,8 +49,12 @@ def get_next_name(last_company_name: str, name_list: List[str]) -> str:
 
     # DbC: name_list and last_company_name should not be falsy (empty or None)
     if not name_list and last_company_name:
-        logging.error("Falsy arguments passed to get_next_name: last_company_name == " \
-        "'%s', name_list == %s", last_company_name, name_list)
+        logging.error(
+            "Falsy arguments passed to get_next_name: last_company_name == "
+            "'%s', name_list == %s",
+            last_company_name,
+            name_list,
+        )
         raise ValueError("Invalid arguments passed to get_next_name")
 
     # handles empty entries in name_list. Again, revealed through testing.
