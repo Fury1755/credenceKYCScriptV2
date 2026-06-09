@@ -3,7 +3,8 @@ KYC (Know-Your-Client) is a background check conducted on clients to prevent fin
 It extracts company data from an excel checking sheet, retrieves the latest ACRA business profiles from the company SharePoint, performs a Google search on individuals, takes a screenshot, uploads the evidence to SharePoint and logs the progress back onto the excel sheet.
 
 ## Current status
-The script is functional but tangled. For example, the "SharePointClient" class, which has grown to become a 'god' object, containing both API-related methods and core processing logic. A refactor is planned to improve maintainability and separation of concerns.
+The script is functional but tangled. It is currently being refactored. For example, the src/boundary/search.py combines user input logic and search logic.
+Unit tests are also being expanded to ensure adequate coverage.
 
 ## Technologies
 - playwright - framework that automates browser actions
@@ -17,11 +18,12 @@ The script is functional but tangled. For example, the "SharePointClient" class,
 - boundary - handles I/O and API calls (file downloads, folder navigation)
 - core - pure logic (parsing urls as strings, pdf parsing, reading/writing to excel files)
 - orchestration - glue code
-- SharePointClient - a class that attempted to encapsulate API logic but grew too large and became entangled in processing logic
+- SharePointClient - a class that encapsulates every
 
 ## Learning objectives
-Through this project, I aim to learn and implement:
+Through this project, I have learned and implemented:
 - commit hygiene
 - defensive programming for I/O modules
 - Design by Contract for core modules
-- Encapsulation with SharePointClient and its (not yet) subclasses
+- Encapsulation with SharePointClient and its subclass
+- unit testing

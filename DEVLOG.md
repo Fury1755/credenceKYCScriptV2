@@ -50,3 +50,8 @@ The script is now functional!
 
 ## 2026-06-06
 - completed writing property tests for 'src/core/string_helpers.py' and patched exposed weaknesses (duplicates, falsy inputs)
+
+## 2026-06-09
+- added ruff: pre-commit hooks
+- created 'test_sharepoint_clients': unit tests for sharepoint_client
+- created 'sharepoint_client_parser.py': refactored sharepoint_client
