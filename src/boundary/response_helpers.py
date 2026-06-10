@@ -1,7 +1,7 @@
 """This module contains generic helper functions that interact directly with server responses."""
 
 from playwright.sync_api import APIResponse, Page
-from typing import Optional
+from typing import Optional, Any
 import logging
 import time
 
@@ -65,6 +65,19 @@ def extract_retry_after(response: APIResponse) -> Optional[float]:
         return None
 
 
+def extract_rate_limit(response: APIResponse) -> Optional[float]:
+    """
+    Returns the number of seconds before rate limit resets, from the header
+    ratelimit-reset.
+    """
+
+    rate_limit_reset = response.headers.get("ratelimit-reset")
+    if rate_limit_reset:
+        return float(rate_limit_reset)
+    else:
+        return None
+
+
 def request_with_retry(
     page: Page,
     method: str,
@@ -121,6 +134,13 @@ def request_with_retry(
             time.sleep(
                 2**attempt
             )  # exponential backoff is fine because max_retries is 0-indexed
+
+        rate_limit = extract_rate_limit(response)
+        if rate_limit is not None:
+            logging.warning(
+                "Rate limit detected. Self-throttling for %s seconds:", rate_limit
+            )
+            time.sleep(rate_limit)
 
     logging.error("Failed to get response from %s", url)
     raise RuntimeError(f"Failed to get response from {url}")
