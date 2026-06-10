@@ -55,3 +55,8 @@ The script is now functional!
 - added ruff: pre-commit hooks
 - created 'test_sharepoint_clients': unit tests for sharepoint_client
 - created 'sharepoint_client_parser.py': refactored sharepoint_client
+
+## 2026-07-09
+- created 'pdf_scraping/': scrapes pdfs
+- created 'test_walk_folder_contents.py' and 'walk_folder_contents.py': more unit tests/factories for sharepoint_client
+- refactored 'sharepoint_client.py': better organization, SRP
