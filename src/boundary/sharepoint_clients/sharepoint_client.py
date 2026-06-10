@@ -158,13 +158,13 @@ class SharePointClient(FolderMixin):
         # get the best matching folder and file
         try:
             files = contents.get("Files", [])
-            file = self._get_item_data(query, files)
+            file = self._get_matching_results(query, files)
         except (SharePointKeyError, ValueError):
             logging.info("No file '%s' in '%s'. Looking for folders:", query, self.name)
 
         try:
             folders = contents.get("Folders", [])
-            folder = self._get_item_data(query, folders)
+            folder = self._get_matching_results(query, folders)
             logging.info("Found folder '%s' in %s.", query, self.name)
         except (SharePointKeyError, ValueError):
             logging.info("No folder '%s' in '%s'", query, self.name)
@@ -262,7 +262,7 @@ class SharePointClient(FolderMixin):
             self._parser.unwrap_response(current_letter_response)
         )
 
-        current_company_data = self._get_item_data(
+        current_company_data = self._get_matching_results(
             current_company_name,
             current_company_folders,
         )

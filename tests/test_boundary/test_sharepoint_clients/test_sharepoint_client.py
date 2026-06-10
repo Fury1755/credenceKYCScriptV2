@@ -28,12 +28,14 @@ def test_get_next_company_coarse():
         patch.object(SharePointClient, "_walk_folder") as mock_walk_folder,
         patch("core.string_helpers.best_match_item") as mock_best_match_item,
         patch.object(SharePointClient, "_decide_folder") as mock_decide_folder,
-        patch.object(SharePointClient, "_get_item_data") as mock_get_item_data,
+        patch.object(
+            SharePointClient, "_get_matching_results"
+        ) as mock_get_matching_results,
         patch.object(SharePointClient, "_build_client_query") as mock_build_query,
     ):
         folder_names = ["Apparation Pte Ltd", "Aquatic Horsea Venture Capital"]
         mock_best_match_item.return_value = folder_names
-        mock_get_item_data.return_value = folder_names
+        mock_get_matching_results.return_value = folder_names
         mock_decide_folder.return_value = "mock ServerRelativeUrl"
 
         # simulates the json structure of what sharepoint returns

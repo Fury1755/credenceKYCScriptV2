@@ -117,7 +117,7 @@ class FolderMixin:
         files = response_data.get("Files", {}).get("results", [])
         return files
 
-    def _get_item_data(
+    def _get_matching_results(
         self, query: str, items: Optional[List[dict[str, str]]]
     ) -> Optional[dict[str, str]]:
         """Returns an item with a key 'Name' matching the query.
