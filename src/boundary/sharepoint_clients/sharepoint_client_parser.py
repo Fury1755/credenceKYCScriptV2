@@ -5,6 +5,8 @@ instance.
 """
 
 from playwright.sync_api import APIResponse
+from core import string_helpers
+from boundary.sharepoint_exceptions import SharePointKeyError
 from typing import List, Optional
 import logging
 
@@ -115,3 +117,27 @@ class SharePointClientParser:
             folder_names.append(folder_name)
 
         return folder_names
+
+    def get_matching_results(
+        self, query: str, items: Optional[List[dict[str, str]]]
+    ) -> Optional[dict[str, str]]:
+        """
+        Args:
+            query (str): The query you want the result to match
+            items (Optional[List[Dict]]): A dictionary that represents a
+                                            'File' or 'Folder' item exactly
+                                            (i.e. the most immediate key is "Name")
+
+        Returns:
+            An item with a key 'Name' matching the query.
+            Takes a list of dictionaries as arguments.
+        """
+        if not items:
+            return None
+        item_names: List[str] = [item["Name"] for item in items]
+        name = string_helpers.best_match_item(query, item_names)
+        for item in items:
+            if item["Name"] == name:
+                return item
+        logging.error("Query %s not found in item", query)
+        raise SharePointKeyError(f"Query {query} not found.")
