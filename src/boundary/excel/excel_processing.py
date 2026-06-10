@@ -1,6 +1,8 @@
 """
 This module handles the logic and processing of workbooks.
-The input and output should be workbooks.
+The input and output should be in terms of workbooks.
+Because it mutates the same workbook that it takes as input,
+this module is not pure.
 """
 
 from openpyxl import Workbook
