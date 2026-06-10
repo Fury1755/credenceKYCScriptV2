@@ -8,9 +8,9 @@ I tried to make the functions as pure as possible for max reliability
 from cloakbrowser import launch_persistent_context
 import config
 from boundary import search
-from boundary.excel_io import download_excel, upload_excel
+from boundary.excel.excel_io import download_excel, upload_excel
 from boundary.pdf_io import create_pdf_folders, upload_pdfs
-from core.excel_processing import get_latest_company_name, append_excel
+from boundary.excel.excel_processing import get_latest_company_name, append_excel
 from orchestration.sharepoint_orchestration import get_current_company, go_to_sentroweb
 from orchestration.pdf_orchestration import get_individuals
 
