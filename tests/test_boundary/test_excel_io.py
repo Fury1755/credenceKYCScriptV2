@@ -2,7 +2,7 @@
 This module conducts unit tests for excel_io.py.
 """
 
-from boundary.excel_io import download_excel, upload_excel
+from boundary.excel.excel_io import download_excel, upload_excel
 from factories.mock_response import MockAPIResponse
 from unittest.mock import patch, MagicMock
 import pytest
@@ -22,13 +22,13 @@ def test_download_excel(status: int, ok: bool):
     mock_response = MockAPIResponse(status=status, ok=ok)
 
     # patch the local function
-    with patch("boundary.excel_io.request_with_retry") as mock_request:
+    with patch("boundary.excel.excel_io.request_with_retry") as mock_request:
         mock_request.return_value = mock_response
 
         # openpyxl.load_workbook is an independent external dependency
         #  within the function. It's return value does NOT follow from mocking
         #  a request, therefore it must be mocked as well.
-        with patch("boundary.excel_io.openpyxl.load_workbook") as mock_workbook:
+        with patch("boundary.excel.excel_io.openpyxl.load_workbook") as mock_workbook:
             fake_wb = MagicMock()
             mock_workbook.return_value = fake_wb
             if not ok:
@@ -73,9 +73,9 @@ def test_upload_excel(text: str, status: int, ok: bool):
     # since we are mocking requests, to ensure coverage, we should mock (and subsequently
     #  test, but in a separate module) these earlier functions.
     with (
-        patch("boundary.excel_io.get_request_digest") as mock_digest,
-        patch("boundary.excel_io.workbook_to_bytes") as mock_bytes,
-        patch("boundary.excel_io.request_with_retry") as mock_request,
+        patch("boundary.excel.excel_io.get_request_digest") as mock_digest,
+        patch("boundary.excel.excel_io.workbook_to_bytes") as mock_bytes,
+        patch("boundary.excel.excel_io.request_with_retry") as mock_request,
     ):
         fake_digest = "hhh"
         mock_digest.return_value = fake_digest
