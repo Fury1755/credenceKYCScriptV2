@@ -2,8 +2,6 @@
 
 from typing import Optional
 
-"""This is the array of months"""
-
 
 class Individual:
     """The 'Individual' class"""

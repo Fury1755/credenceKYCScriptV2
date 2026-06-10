@@ -113,6 +113,13 @@ def request_with_retry(
             logging.error("Unexpected method: %s", method)
             raise RuntimeError(f"Unexpected method in request_with_retry: {method}")
 
+        rate_limit = extract_rate_limit(response)
+        if rate_limit is not None:
+            logging.warning(
+                "Rate limit detected. Self-throttling for %s seconds:", rate_limit
+            )
+            time.sleep(rate_limit)
+
             # 429, 503 are the HTTP status codes SharePoint sends when requests fail
         if response.status not in (429, 503):
             logging.debug("URL: %s, \n Status: %s", url, response.status)
@@ -134,13 +141,6 @@ def request_with_retry(
             time.sleep(
                 2**attempt
             )  # exponential backoff is fine because max_retries is 0-indexed
-
-        rate_limit = extract_rate_limit(response)
-        if rate_limit is not None:
-            logging.warning(
-                "Rate limit detected. Self-throttling for %s seconds:", rate_limit
-            )
-            time.sleep(rate_limit)
 
     logging.error("Failed to get response from %s", url)
     raise RuntimeError(f"Failed to get response from {url}")
