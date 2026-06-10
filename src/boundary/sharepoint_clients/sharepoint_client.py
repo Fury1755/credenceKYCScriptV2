@@ -245,7 +245,7 @@ class SharePointClient(FolderMixin):
             self._parser.unwrap_response(current_letter_response)
         )
 
-        current_company_data = self._get_matching_results(
+        current_company_data = self._parser.get_matching_results(
             current_company_name,
             current_company_folders,
         )

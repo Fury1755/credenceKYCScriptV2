@@ -4,10 +4,8 @@ from playwright.sync_api import APIResponse, Page
 from boundary.sharepoint_exceptions import (
     SharePointAttributeError,
     SharePointContractViolation,
-    SharePointKeyError,
 )
 
-from core import string_helpers
 from typing import Optional, List
 from abc import abstractmethod
 import logging
@@ -116,21 +114,6 @@ class FolderMixin:
         """Returns a List 'Files' from an unwrapped response"""
         files = response_data.get("Files", {}).get("results", [])
         return files
-
-    def _get_matching_results(
-        self, query: str, items: Optional[List[dict[str, str]]]
-    ) -> Optional[dict[str, str]]:
-        """Returns an item with a key 'Name' matching the query.
-        Takes a list of dictionaries as arguments."""
-        if not items:
-            return None
-        item_names: List[str] = [item["Name"] for item in items]
-        name = string_helpers.best_match_item(query, item_names)
-        for item in items:
-            if item["Name"] == name:
-                return item
-        logging.error("Query %s not found in %s", query, self.name)
-        raise SharePointKeyError(f"Query {query} not found in client '{self.name}'.")
 
     def _parse_item_type(self, item_data: dict) -> int:
         """Takes a SharePoint item's item_data as input and returns its type"""

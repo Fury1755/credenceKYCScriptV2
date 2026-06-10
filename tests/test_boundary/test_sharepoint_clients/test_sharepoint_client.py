@@ -5,6 +5,7 @@ to interact and process SharePoint site navigation.
 """
 
 from boundary.sharepoint_clients.sharepoint_client import SharePointClient
+from boundary.sharepoint_clients.sharepoint_client_parser import SharePointClientParser
 from factories.mock_response import MockAPIResponse
 from factories.walk_folder_contents import create_folder
 from unittest.mock import patch, MagicMock
@@ -29,7 +30,7 @@ def test_get_next_company_coarse():
         patch("core.string_helpers.best_match_item") as mock_best_match_item,
         patch.object(SharePointClient, "_decide_folder") as mock_decide_folder,
         patch.object(
-            SharePointClient, "_get_matching_results"
+            SharePointClientParser, "get_matching_results"
         ) as mock_get_matching_results,
         patch.object(SharePointClient, "_build_client_query") as mock_build_query,
     ):
