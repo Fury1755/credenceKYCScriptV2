@@ -29,7 +29,7 @@ CURRENT_LETTER = os.environ["CURRENT_LETTER"]
 COMPANY_LIST_BY_LETTER_PATH = os.environ["COMPANY_LIST_BY_LETTER_PATH"]
 
 # path to local folder where files will be downloaded. Used in pdf scraping only.
-WORKSPACE_PATH = os.environ["WORKSPACE_PATH"]
+PDF_TESTING_PATH = os.environ["PDF_TESTING_PATH"]
 
 # the current year. determines the name of folder created in 'Sentroweb Search'
 CURRENT_YEAR = os.environ["CURRENT_YEAR"]
