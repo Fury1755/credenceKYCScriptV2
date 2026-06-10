@@ -47,8 +47,8 @@ class SharePointClientParser:
         #  enables more flexible custom error handling.
         # Otherwise, KeyError will be thrown instead (which is what happened in config.py)
         # We assume results will exist because we always request with application;odata=verbose
-        folders = self._get_folders(response_data)
-        files = self._get_files(response_data)
+        folders = self.get_folders(response_data)
+        files = self.get_files(response_data)
 
         if files:
             output["Files"] = files
@@ -57,7 +57,7 @@ class SharePointClientParser:
 
         return output
 
-    def _get_folders(
+    def get_folders(
         self, response_data: dict[str, dict[str, List[dict[str, str]]]]
     ) -> Optional[List[dict[str, str]]]:
         """Returns a List 'Folders' from an unwrapped response"""
@@ -68,7 +68,7 @@ class SharePointClientParser:
         folders = response_data.get("Folders", {}).get("results", [])
         return folders
 
-    def _get_files(
+    def get_files(
         self, response_data: dict[str, dict[str, List[dict[str, str]]]]
     ) -> Optional[List[dict[str, str]]]:
         """Returns a List 'Files' from an unwrapped response"""
