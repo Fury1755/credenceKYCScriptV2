@@ -1,2 +1,2 @@
-This folder contains the core logic. Functions here are Designed by Contract and generally pure (with the exception of excel_processing, but that's also pure 'logic', so it's acceptable).
+This folder contains the core logic. Functions here should be Designed by Contract and pure.
 Contains trusted code.
