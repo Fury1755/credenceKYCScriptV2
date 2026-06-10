@@ -1,4 +1,6 @@
-"""This module is a factory for creating mock APIResponse objects."""
+"""
+This module is a factory for creating mock APIResponse objects.
+"""
 
 
 class MockAPIResponse:
