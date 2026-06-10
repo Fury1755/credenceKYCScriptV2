@@ -151,41 +151,24 @@ class SharePointClient(FolderMixin):
             raise SharePointKeyError(
                 f"Build client found no folders or files in {self.name}"
             )
-        folder = None
-        file = None
+
         folders = None
         files = None
+        # create a list of file and folder dicts that get_matching_results can work on
+        item_list = []
         # get the best matching folder and file
-        try:
-            files = contents.get("Files", [])
-            file = self._get_matching_results(query, files)
-        except (SharePointKeyError, ValueError):
-            logging.info("No file '%s' in '%s'. Looking for folders:", query, self.name)
+        files = contents.get("Files", [])
+        folders = contents.get("Folders", [])
+        logging.info(
+            "Found %s files and %s folders in %s", len(files), len(folders), self.name
+        )
+        # note: adding lists doesn't nest them
+        item_list = files + folders
+        item = self._parser.get_matching_results(query, item_list)
 
-        try:
-            folders = contents.get("Folders", [])
-            folder = self._get_matching_results(query, folders)
-            logging.info("Found folder '%s' in %s.", query, self.name)
-        except (SharePointKeyError, ValueError):
-            logging.info("No folder '%s' in '%s'", query, self.name)
-
-        item = None
-
-        # select the best matching item to build the client with
-        if folder and file:
-            item_name = string_helpers.best_match_item(
-                query, [folder["Name"], file["Name"]]
-            )
-            if folder["Name"] == item_name:
-                item = folder
-            else:
-                item = file
-        if not file:
-            item = folder
-        if not folder:
-            item = file
-
-        if item is None:
+        if item is not None:
+            logging.info("Found item %s in %s", item["Name"], self.name)
+        else:
             logging.error(
                 "Build client failed, no folders and files "
                 "were found matching %s in %s",
