@@ -208,8 +208,8 @@ class SharePointClient(FolderMixin):
     ) -> "SharePointClient":  # this is a public method
         """
         Returns the next company's folder as a SharePointClient instance.
-        Takes the URL of the company list from [A-Z] ('Credence Advisory - Corp Sec')
-        as input.
+        Relies on the current client's state as input; should only be called
+        when the current client is the list of companies for the current_letter.
         """
 
         current_letter = previous_company[0].upper()
@@ -471,3 +471,27 @@ class SharePointClient(FolderMixin):
             )
 
         return match_item[0]["ServerRelativeUrl"]
+
+    def return_folders(self) -> List["SharePointClient"] | None:
+        """
+        Returns all the folders inside itself.
+        """
+
+        response = self._walk_folder()
+        folders = self._parser.get_folders(self._parser.unwrap_response(response))
+        # build a list of sharepointclients to return
+        if folders is not None:
+            client_list = [
+                SharePointClient(
+                    self.page,
+                    self.site_url,
+                    folder["ServerRelativeUrl"],
+                    folder["Name"],
+                    folder["TimeLastModified"],
+                    "1",
+                )
+                for folder in folders
+            ]
+
+            return client_list
+        return None
