@@ -8,7 +8,9 @@ def set_nested(keys: List[str], value: Any):
     Creates a nested dictionary used to simulate 'contents' dictionaries.
 
         Args:
-            keys(List[str]): A list that represents how many nests you want.
+            keys (List[str]): A list that represents how many nests you want.
+                                Each key nests one layer deeper.
+            value (Any): The value you want the innermost nested key to hold.
 
         Returns:
             dict: A dictionary with nested contents in nesting order of 'keys'
@@ -20,12 +22,14 @@ def set_nested(keys: List[str], value: Any):
 
     # current is a pointer to the innermost dict we work on
     current = root
-    for key in keys:
+    for idx, key in enumerate(keys):
         # .setdefault is a dict method that
         #  creates a new key-{} pair inside the dict it is called on.
         # we are chaining it with the for loop, so it's not magic, just iteration.
-        current = current.setdefault(key, {})
-    current[keys[-1]] = value
+        if idx < len(keys) - 1:
+            current = current.setdefault(key, {})
+        else:
+            current[keys[-1]] = value
 
     return root
 
