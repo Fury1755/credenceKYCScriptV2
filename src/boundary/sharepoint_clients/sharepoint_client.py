@@ -278,6 +278,25 @@ class SharePointClient(FolderMixin):
         contents: dict[str, List[dict[str, str]]],
         most_recent_file: Optional[dict[str, str]],
     ) -> dict[str, str] | None:
+        """
+        Recursively explores the current directory and returns a dictionary of the
+        file object.
+
+        Args:
+            contents(dict): A dictionary with keys "Files" and "Folders".
+            most_recent_file(Optional[dict]): The dictionary of a the most_recent_file.
+                                                may not exist if no business profiles have
+                                                been found so far.
+
+        Returns:
+            A dictionary of the found "File" object.
+
+            Example:
+
+            {"Name": "Nice Profile Pte Ltd", "ServerRelativeUrl": "hello",
+            "TimeLastModified": "1/1/2025"}
+
+        """
 
         # pylint: disable=protected-access
         # returns a dictionary of the pdf containing all its attributes
