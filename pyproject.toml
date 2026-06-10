@@ -17,6 +17,7 @@ dev = [
     "black>=26.5.1",
     "hypothesis>=6.155.1",
     "pytest>=9.0.3",
+    "pytest-cov>=7.1.0",
     "ruff>=0.15.14",
 ]
 
