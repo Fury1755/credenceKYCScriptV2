@@ -6,6 +6,7 @@ to interact and process SharePoint site navigation.
 
 from boundary.sharepoint_clients.sharepoint_client import SharePointClient
 from factories.mock_response import MockAPIResponse
+from factories.walk_folder_contents import create_folder
 from unittest.mock import patch, MagicMock
 
 
@@ -141,3 +142,45 @@ def test_create_folder():
             *request_positional_args, headers=header_value
         )
         mock_build_query.assert_called_once_with(mock_folder_name)
+
+
+def test_build_client_query():
+    """
+    Behaviourally tests build_client_query's external behaviour.
+
+    Verifies that:
+    - build_client_query returns the correct client corresponding to the
+        relevant query
+    """
+
+    with (
+        patch.object(SharePointClient, "_walk_folder") as mock_walk_folder,
+        patch.object(SharePointClient, "_parse_item_type") as mock_parse_item_type,
+    ):
+        mock_page = MagicMock()
+        mock_site = "fake site"
+        mock_server_relative_url = str("fake relative url")
+        mock_name = MagicMock()
+        mock_time = MagicMock()
+        mock_file_sys = MagicMock()
+        dummy = SharePointClient(
+            mock_page,
+            mock_site,
+            mock_server_relative_url,
+            mock_name,
+            mock_time,
+            mock_file_sys,
+        )
+
+        mock_folder = create_folder(
+            [("leia organa", "su", "afea"), ("han solo", "adwd", "aaaa")]
+        )
+        mock_json = {"d": mock_folder}
+        mock_response = MockAPIResponse("doesnt matter", mock_json)
+        mock_walk_folder.return_value = mock_response
+        mock_parse_item_type.return_value = 1
+
+        result = dummy._build_client_query("leia organa")  # pylint: disable=protected-access
+        assert result.name == "leia organa"
+        assert result.server_relative_url == "su"
+        assert result.time_last_modified == "afea"
