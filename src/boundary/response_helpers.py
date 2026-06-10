@@ -1,7 +1,7 @@
 """This module contains generic helper functions that interact directly with server responses."""
 
 from playwright.sync_api import APIResponse, Page
-from typing import Optional, Any
+from typing import Optional
 import logging
 import time
 
