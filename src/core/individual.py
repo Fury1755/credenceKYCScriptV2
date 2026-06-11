@@ -1,6 +1,7 @@
 """This module holds the class 'Individual' and its attributes."""
 
-from typing import Optional
+from typing import Optional, List
+import logging
 
 
 class Individual:
@@ -27,3 +28,40 @@ class Individual:
         self.google = google
         self.baidu = baidu
         self.role = role
+
+
+def sort_individuals(kah_list: List[Individual]):
+    """
+    This function sorts individuals based on their
+    role.
+
+    Args:
+        kah_list(List[Individual]): The list of individuals pdf_processing returns.
+
+    Returns:
+        A List of individuals sorted according to their role in the respective order:
+        1. SHAREHOLDER/DIRECTOR
+        2. SHAREHOLDER
+        3. DIRECTOR
+    """
+
+    # precondition: Every individual has a proper role
+    role_list = ["SHAREHOLDER/DIRECTOR", "SHAREHOLDER", "DIRECTOR"]
+    for individual in kah_list:
+        if individual.role not in role_list:
+            logging.error(
+                "Individual '%s' has invalid role '%s'",
+                individual.name,
+                individual.role,
+            )
+            raise ValueError(
+                "Invalid/non-existing role for individual passed into sort_individuals"
+            )
+
+    shareholder_director = [
+        ind for ind in kah_list if ind.role == "SHAREHOLDER/DIRECTOR"
+    ]
+    shareholder = [ind for ind in kah_list if ind.role == "SHAREHOLDER"]
+    director = [ind for ind in kah_list if ind.role == "DIRECTOR"]
+
+    return shareholder_director + shareholder + director
