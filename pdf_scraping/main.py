@@ -31,7 +31,7 @@ logging.basicConfig(
 context = launch_persistent_context(
     user_data_dir=config.BROWSER_PROFILE_DIR,
     # channel="msedge",
-    headless=False,
+    headless=True,
     args=[
         "--no-first-run",
         "--no-default-browser-check",
