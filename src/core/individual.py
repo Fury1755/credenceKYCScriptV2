@@ -43,10 +43,11 @@ def sort_individuals(kah_list: List[Individual]):
         1. SHAREHOLDER/DIRECTOR
         2. SHAREHOLDER
         3. DIRECTOR
+        4. RELATED
     """
 
     # precondition: Every individual has a proper role
-    role_list = ["SHAREHOLDER/DIRECTOR", "SHAREHOLDER", "DIRECTOR"]
+    role_list = ["SHAREHOLDER/DIRECTOR", "SHAREHOLDER", "DIRECTOR", "RELATED"]
     for individual in kah_list:
         if individual.role not in role_list:
             logging.error(
@@ -63,5 +64,6 @@ def sort_individuals(kah_list: List[Individual]):
     ]
     shareholder = [ind for ind in kah_list if ind.role == "SHAREHOLDER"]
     director = [ind for ind in kah_list if ind.role == "DIRECTOR"]
+    related = [ind for ind in kah_list if ind.role == "RELATED"]
 
-    return shareholder_director + shareholder + director
+    return shareholder_director + shareholder + director + related

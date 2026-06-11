@@ -54,6 +54,6 @@ async def load_page(context, engine: Literal["Google", "Baidu"], query: str) -> 
     if engine == "Google":
         await page.goto(f"https://google.com/search?q={query}")
     elif engine == "Baidu":
-        await page.goto(f"https://www.baidu.com/s?wd={query}")
+        await page.goto(f"https://www.baidu.com/s?wd={query}", timeout=60000)
 
     return (engine, query, page)

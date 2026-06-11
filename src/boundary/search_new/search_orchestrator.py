@@ -9,6 +9,7 @@ from boundary.search_new.concurrent_loading import load_pages_for_individual
 from boundary.search_new.search_input import (
     set_individual_attributes,
     screenshot_individual_search,
+    append_related_individuals,
 )
 from playwright.async_api import Page, BrowserContext
 import asyncio
@@ -25,6 +26,7 @@ async def search_orchestrator(
     """
 
     kah_list = set_individual_attributes(kah_list)
+    kah_list = append_related_individuals(kah_list)
 
     page, context = await init_browser()
     page: Page

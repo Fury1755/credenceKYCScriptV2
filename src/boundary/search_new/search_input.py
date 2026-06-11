@@ -9,7 +9,7 @@ import logging
 import asyncio
 
 
-def set_individual_attributes(kah_list: List[Individual]):
+def set_individual_attributes(kah_list: List[Individual]) -> List[Individual]:
     """
     This function relies on user input to mutate/set individual attributes of
     the list of individuals passed to it.
@@ -24,6 +24,28 @@ def set_individual_attributes(kah_list: List[Individual]):
         if individual.chinese_name != "-":
             individual.baidu = True
 
+    return kah_list
+
+
+def append_related_individuals(kah_list: List[Individual]) -> List[Individual]:
+    """
+    This function appends individuals with the 'RELATED' role to kah_list
+    """
+
+    while True:
+        is_new_individual = input("Any other related individuals? (Y/N): ")
+        if is_new_individual.upper() == "Y":
+            new_individual = Individual(
+                "-", "-", "-", "-", "-", True, True, False, "RELATED"
+            )
+            new_individual.name = input("Enter related party name: ")
+            new_individual.chinese_name = input(
+                f"Enter {new_individual.name}'s chinese name ('-' if None): "
+            )
+            kah_list.append(new_individual)
+        if is_new_individual.upper() == "N":
+            break
+        print("Invalid input")
     return kah_list
 
 
