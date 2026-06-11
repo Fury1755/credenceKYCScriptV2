@@ -7,14 +7,18 @@ I tried to make the functions as pure as possible for max reliability
 # from playwright.sync_api import sync_playwright
 from cloakbrowser import launch_persistent_context
 import config
-from boundary import search
+from boundary.search_new.search_orchestrator import search_orchestrator
 from boundary.excel.excel_io import download_excel, upload_excel
 from boundary.pdf_io import create_pdf_folders, upload_pdfs
 from boundary.excel.excel_processing import get_latest_company_name, append_excel
 from orchestration.sharepoint_orchestration import get_current_company, go_to_sentroweb
 from orchestration.pdf_orchestration import get_individuals
 
+import asyncio
+import nest_asyncio
 import logging
+
+nest_asyncio.apply()
 
 logging.basicConfig(
     level=logging.INFO,
@@ -69,7 +73,7 @@ sentroweb_client = current_company._build_client_query("Sentroweb Search")  # py
 
 go_to_sentroweb(sentroweb_client)
 
-screenshots = search.search_master(page, kah_list)
+screenshots = asyncio.run(search_orchestrator(kah_list))
 
 pdf_folders = create_pdf_folders(config.CURRENT_YEAR, sentroweb_client, kah_list)
 
