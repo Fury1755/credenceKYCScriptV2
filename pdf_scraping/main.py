@@ -18,6 +18,7 @@ from scraping_pdf_io import download_pdf_to_disk
 from boundary.sharepoint_clients.sharepoint_client import SharePointClient
 
 import logging
+import time
 
 
 # set up and configure, same as main
@@ -126,9 +127,11 @@ for current_letter in letter_list:
                     "Could not get bizfile for %s. Continuing.", company_client.name
                 )
                 continue
-    except Exception:  # pylint: disable=[W0718]
-        logging.info(
+    except Exception as e:  # pylint: disable=[W0718]
+        logging.error(
             "Catastrophic failure occured in letter %s. Continuing to next letter:",
             current_letter,
         )
+        logging.error(e.args)
+        time.sleep(1)
         continue
