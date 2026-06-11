@@ -11,7 +11,11 @@ import logging
 
 
 def get_current_company(
-    page: Page, site_url: str, server_raw_url: str, previous_company: str
+    page: Page,
+    site_url: str,
+    server_raw_url: str,
+    previous_company: str | None,
+    current_letter: str,
 ) -> SharePointClient:
     """
     Returns a SharePointClient instance of the current company.
@@ -29,7 +33,7 @@ def get_current_company(
         "1",
     )
 
-    current_company = a_to_z_list.get_next_company(previous_company)
+    current_company = a_to_z_list.get_next_company(previous_company, current_letter)
     logging.info(
         "Successfully got next company '%s' as SharePointClient", current_company.name
     )

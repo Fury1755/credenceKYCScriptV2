@@ -37,7 +37,7 @@ def find_worksheet(wb: Workbook, current_letter: str) -> Worksheet:
     return ws
 
 
-def get_latest_company_name(wb: Workbook, current_letter: str) -> str:
+def get_latest_company_name(wb: Workbook, current_letter: str) -> str | None:
     """
     This module reads the latest company that has been KYC-ed
     from the spreadsheet corresponding to current_letter.
@@ -51,6 +51,8 @@ def get_latest_company_name(wb: Workbook, current_letter: str) -> str:
     if last_cell:
         logging.info("%s", last_cell.value)
         print(last_cell.value)
+        if str(last_cell.value).strip() == "Company Name":
+            return None
         return str(last_cell.value)
 
     logging.error("No cell found in worksheet %s", ws.title)

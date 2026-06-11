@@ -62,7 +62,11 @@ wb = download_excel(page, config.SITE_URL, config.EXCEL_URL)
 latest_company_name = get_latest_company_name(wb, config.CURRENT_LETTER)
 
 current_company = get_current_company(
-    page, config.SITE_URL, config.COMPANY_LIST_BY_LETTER_PATH, latest_company_name
+    page,
+    config.SITE_URL,
+    config.COMPANY_LIST_BY_LETTER_PATH,
+    latest_company_name,
+    config.CURRENT_LETTER,
 )
 
 bizfile = current_company.get_bizfile(current_company)

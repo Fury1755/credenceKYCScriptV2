@@ -204,16 +204,25 @@ class SharePointClient(FolderMixin):
         return bizfile
 
     def get_next_company(
-        self, previous_company: str
+        self, previous_company: str | None, current_letter: str
     ) -> "SharePointClient":  # this is a public method
         """
+        Args:
+            previous_company(str | None): The name of the previous company (that can
+                                            also be fouund on the excel sheet).
+                                            Can be None if there is no previous company
+                                            (i.e. we are getting the first company of the
+                                            current letter)
         Returns the next company's folder as a SharePointClient instance.
         Relies on the current client's state as input; should only be called
         when the current client is the list of companies for the current_letter.
         """
 
-        current_letter = previous_company[0].upper()
-        logging.info("Current letter found: '%s'", current_letter)
+        # precondition: current_letter must be a single letter
+        if len(current_letter) > 1:
+            raise ValueError(f"Invalid current_letter '{current_letter}': too long!")
+
+        logging.info("Current letter: '%s'", current_letter)
         current_letter_relative = self._decide_folder(
             #  gets first letter of query as current letter
             current_letter,
@@ -237,9 +246,13 @@ class SharePointClient(FolderMixin):
             current_letter_contents
         )
 
-        current_company_name = string_helpers.get_next_name(
-            previous_company, company_names
-        )
+        if previous_company is not None:
+            current_company_name = string_helpers.get_next_name(
+                previous_company, company_names
+            )
+        else:
+            # get the first company name
+            current_company_name = sorted(company_names, key=str.casefold)[0]
 
         current_company_folders = self._get_folders(
             self._parser.unwrap_response(current_letter_response)
