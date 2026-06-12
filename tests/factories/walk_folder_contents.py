@@ -2,7 +2,7 @@
 This module creates 'contents' dictionaries (specifically, the dicts that walk_folder returns).
 """
 
-from typing import List, Literal, Any
+from typing import Any, List, Literal
 
 
 def set_nested(keys: List[str], value: Any):

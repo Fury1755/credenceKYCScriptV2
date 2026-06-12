@@ -2,14 +2,16 @@
 This module handles downloading and uploading of excel workbooks.
 """
 
-from playwright.sync_api import Page
+import io
+import logging
+import os
+
+import openpyxl
 from openpyxl import Workbook
+from playwright.sync_api import Page
+
 from boundary.response_helpers import get_request_digest, request_with_retry
 from core.url_helpers import get_excel_relative_url
-import io
-import os
-import openpyxl
-import logging
 
 
 def download_excel(page: Page, site_url: str, raw_url: str) -> Workbook:

@@ -1,7 +1,7 @@
 """This module holds the class 'Individual' and its attributes."""
 
-from typing import Optional, List
 import logging
+from typing import List, Optional
 
 
 class Individual:

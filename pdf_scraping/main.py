@@ -11,15 +11,15 @@ sys.path.insert(0, str(Path(__file__).parent.parent))  # project root
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))  # src directory
 
 
-from cloakbrowser import launch_persistent_context
-from src import config
-from src.core.url_helpers import get_url_id
-from scraping_pdf_io import download_pdf_to_disk
-from boundary.sharepoint_clients.sharepoint_client import SharePointClient
-
 import logging
 import time
 
+from cloakbrowser import launch_persistent_context
+from scraping_pdf_io import download_pdf_to_disk
+
+from boundary.sharepoint_clients.sharepoint_client import SharePointClient
+from src import config
+from src.core.url_helpers import get_url_id
 
 # set up and configure, same as main
 logging.basicConfig(

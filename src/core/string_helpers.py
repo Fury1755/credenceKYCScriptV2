@@ -4,9 +4,10 @@ such as fuzzy matching.
 I/O are purely strings.
 """
 
-import rapidfuzz
-from typing import List
 import logging
+from typing import List
+
+import rapidfuzz
 
 
 def best_match_item(query: str, choices: List[str], cutoff: int = 80) -> str:

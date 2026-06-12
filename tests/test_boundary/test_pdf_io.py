@@ -2,11 +2,13 @@
 This module contains unit tests for pdf_io.py
 """
 
-from boundary.pdf_io import download_pdf
-from unittest.mock import patch, MagicMock
-from factories.mock_response import MockAPIResponse
-from boundary.sharepoint_exceptions import SharePointResponseError
+from unittest.mock import MagicMock, patch
+
 import pytest
+from factories.mock_response import MockAPIResponse
+
+from boundary.pdf_io import download_pdf
+from boundary.sharepoint_exceptions import SharePointResponseError
 
 
 @pytest.mark.parametrize(

@@ -3,8 +3,10 @@ This module tests pure methods in the SharePointClientParser class.
 """
 
 from typing import List
-from boundary.sharepoint_clients.sharepoint_client import SharePointClientParser
+
 import pytest
+
+from boundary.sharepoint_clients.sharepoint_client import SharePointClientParser
 
 
 @pytest.mark.parametrize(

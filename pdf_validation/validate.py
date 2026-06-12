@@ -12,10 +12,12 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 sys.path.insert(0, str(project_root / "src"))
 
-from src.core.pdf_processing import process_pdf
-from tqdm import tqdm
-import config
 import io
+
+from tqdm import tqdm
+
+import config
+from src.core.pdf_processing import process_pdf
 
 directory = Path(config.PDF_TESTING_PATH)
 

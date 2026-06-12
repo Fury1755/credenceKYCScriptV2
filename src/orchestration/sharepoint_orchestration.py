@@ -2,12 +2,14 @@
 
 # Obviously, functions defined here are not generic and specific to this SharePoint site only.
 
+import logging
+from urllib.parse import quote
+
 from playwright.sync_api import Page
+
 from boundary.sharepoint_clients.sharepoint_client import SharePointClient
 from boundary.sharepoint_exceptions import SharePointError, SharePointKeyError
 from core.url_helpers import get_url_id
-from urllib.parse import quote
-import logging
 
 
 def get_current_company(

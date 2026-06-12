@@ -2,11 +2,13 @@
 This module isolates everything related to manual input.
 """
 
-from core.individual import Individual, sort_individuals
-from typing import List
-from playwright.async_api import Page
-import logging
 import asyncio
+import logging
+from typing import List
+
+from playwright.async_api import Page
+
+from core.individual import Individual, sort_individuals
 
 
 def set_individual_attributes(kah_list: List[Individual]) -> List[Individual]:

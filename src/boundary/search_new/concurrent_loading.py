@@ -2,10 +2,12 @@
 This module loads pages concurrently.
 """
 
-from playwright.async_api import Page
-from core.individual import Individual
-from typing import Literal
 import asyncio
+from typing import Literal
+
+from playwright.async_api import Page
+
+from core.individual import Individual
 
 
 def load_pages_for_individual(page: Page, individual: Individual):

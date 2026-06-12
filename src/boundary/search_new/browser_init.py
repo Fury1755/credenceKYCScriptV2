@@ -5,7 +5,7 @@ playwright (or technically, cloakbrowser).
 """
 
 from cloakbrowser import launch_async
-from playwright.async_api import Page, BrowserContext
+from playwright.async_api import BrowserContext, Page
 
 
 async def init_browser() -> tuple[Page, BrowserContext]:

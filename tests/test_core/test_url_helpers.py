@@ -1,7 +1,8 @@
 """This module does parameterized tests for url_helpers.py"""
 
-from core.url_helpers import get_url_id
 import pytest
+
+from core.url_helpers import get_url_id
 
 
 @pytest.mark.parametrize(

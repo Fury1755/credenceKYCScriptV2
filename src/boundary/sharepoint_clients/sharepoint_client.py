@@ -12,21 +12,23 @@ and methods for a SharePoint object.
 # We encapsulate ALL 'APIResponse's in here, anything outside this class should not see
 #  APIResponse at all.
 
-from playwright.sync_api import Page, APIResponse
+import logging
+from typing import List, Optional
+
+from playwright.sync_api import APIResponse, Page
+
+from boundary import response_helpers
+from boundary.sharepoint_client_helpers.folder_mixin import FolderMixin
+from boundary.sharepoint_clients.sharepoint_client_parser import SharePointClientParser
 from boundary.sharepoint_exceptions import (
-    SharePointResponseError,
+    SharePointContractViolation,
+    SharePointDuplicateError,
     SharePointError,
     SharePointKeyError,
     SharePointOverwriteError,
-    SharePointContractViolation,
-    SharePointDuplicateError,
+    SharePointResponseError,
 )
-from boundary import response_helpers
 from core import string_helpers
-from boundary.sharepoint_client_helpers.folder_mixin import FolderMixin
-from boundary.sharepoint_clients.sharepoint_client_parser import SharePointClientParser
-from typing import Optional, List
-import logging
 
 
 class SharePointClient(FolderMixin):
@@ -201,6 +203,9 @@ class SharePointClient(FolderMixin):
         bizfile = acra_docs._bizfile_recursive_explorer(acra_docs_contents, None)
         if bizfile is None:
             raise SharePointError(f"Found no bizfiles at all in {company.name}")
+        logging.info(
+            "Selected file '%s' in '%s'", bizfile["Name"], bizfile["ServerRelativeUrl"]
+        )
         return bizfile
 
     def get_next_company(

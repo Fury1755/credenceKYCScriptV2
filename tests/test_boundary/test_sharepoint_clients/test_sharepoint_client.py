@@ -4,11 +4,13 @@ SharePointClient is an orchestration class that contains other classes as compon
 to interact and process SharePoint site navigation.
 """
 
-from boundary.sharepoint_clients.sharepoint_client import SharePointClient
-from boundary.sharepoint_clients.sharepoint_client_parser import SharePointClientParser
+from unittest.mock import MagicMock, patch
+
 from factories.mock_response import MockAPIResponse
 from factories.walk_folder_contents import create_folder
-from unittest.mock import patch, MagicMock
+
+from boundary.sharepoint_clients.sharepoint_client import SharePointClient
+from boundary.sharepoint_clients.sharepoint_client_parser import SharePointClientParser
 
 
 def test_get_next_company_coarse():

@@ -1,13 +1,15 @@
 """This module handles the downloading of pdfs."""
 
 import io
-from boundary.sharepoint_clients.sharepoint_client import SharePointClient
-from core.individual import Individual
-from boundary.response_helpers import get_request_digest, request_with_retry
-from boundary.sharepoint_exceptions import SharePointResponseError
-from playwright.sync_api import Page, APIResponse
-from typing import List
 import logging
+from typing import List
+
+from playwright.sync_api import APIResponse, Page
+
+from boundary.response_helpers import get_request_digest, request_with_retry
+from boundary.sharepoint_clients.sharepoint_client import SharePointClient
+from boundary.sharepoint_exceptions import SharePointResponseError
+from core.individual import Individual
 
 
 def pdf_to_bytes(response: APIResponse):

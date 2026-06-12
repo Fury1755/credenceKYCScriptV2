@@ -4,11 +4,13 @@ responsible for pure functions and logic within a SharePointClient
 instance.
 """
 
-from playwright.sync_api import APIResponse
-from core import string_helpers
-from boundary.sharepoint_exceptions import SharePointKeyError
-from typing import List, Optional
 import logging
+from typing import List, Optional
+
+from playwright.sync_api import APIResponse
+
+from boundary.sharepoint_exceptions import SharePointKeyError
+from core import string_helpers
 
 
 class SharePointClientParser:

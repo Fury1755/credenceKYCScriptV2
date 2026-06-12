@@ -2,10 +2,12 @@
 This module conducts unit tests for excel_io.py.
 """
 
-from boundary.excel.excel_io import download_excel, upload_excel
-from factories.mock_response import MockAPIResponse
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 import pytest
+from factories.mock_response import MockAPIResponse
+
+from boundary.excel.excel_io import download_excel, upload_excel
 
 
 @pytest.mark.parametrize("status, ok", [("400", False), ("200", True), ("304", False)])

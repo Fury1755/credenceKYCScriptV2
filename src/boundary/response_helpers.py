@@ -1,13 +1,14 @@
 """This module contains generic helper functions that interact directly with server responses."""
 
-from playwright.sync_api import APIResponse, Page
-from typing import Optional
 import logging
 import time
+from datetime import datetime, timezone
 
 # for extract_retry_after
 from email.utils import parsedate_to_datetime  # for HTTP/RFC 2822 dates and asctime
-from datetime import timezone, datetime
+from typing import Optional
+
+from playwright.sync_api import APIResponse, Page
 
 
 def log_rate_limit(response: APIResponse):

@@ -1,9 +1,12 @@
 """This module tests the string_helpers module."""
 
-from core.string_helpers import best_match_item, get_next_name
-from hypothesis import given, strategies as st, settings
 from typing import List
+
 import pytest
+from hypothesis import given, settings
+from hypothesis import strategies as st
+
+from core.string_helpers import best_match_item, get_next_name
 
 
 @settings(max_examples=999)

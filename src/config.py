@@ -6,6 +6,7 @@ BROWSER_PROFILE_DIR - the path to the msedge profile which the script use
 """
 
 import os
+
 from dotenv import load_dotenv
 
 load_dotenv()  # gives the script access to the .env file in project root

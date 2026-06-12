@@ -1,11 +1,13 @@
 """This module processes PDFs."""
 
-import pdfplumber
-import re
 import io
-from pdfplumber.page import Page
-from core.individual import Individual
+import re
 from typing import List
+
+import pdfplumber
+from pdfplumber.page import Page
+
+from core.individual import Individual
 
 
 def process_pdf(response_pdf: io.BytesIO) -> List[Individual]:
@@ -265,7 +267,14 @@ def process_pdf(response_pdf: io.BytesIO) -> List[Individual]:
                 if officer_by_name is not None:
                     if shareholder.name in officer_by_name:
                         shareholder.role = "SHAREHOLDER/DIRECTOR"
-                        continue
+                        # remove the old director
+                        output = [
+                            ind
+                            for ind in output
+                            if not (
+                                ind.name == shareholder.name and ind.role == "DIRECTOR"
+                            )
+                        ]
                     else:
                         shareholder.role = (
                             "SHAREHOLDER"  # messy logic. rewrite when free

@@ -5,21 +5,22 @@ I tried to make the functions as pure as possible for max reliability
 """
 
 # from playwright.sync_api import sync_playwright
+import asyncio
+import logging
+
+import nest_asyncio
 from cloakbrowser import launch_persistent_context
+
 import config
-from boundary.search_new.search_orchestrator import search_orchestrator
 from boundary.excel.excel_io import download_excel, upload_excel
+from boundary.excel.excel_processing import append_excel, get_latest_company_name
 from boundary.pdf_io import create_pdf_folders, upload_pdfs
-from boundary.excel.excel_processing import get_latest_company_name, append_excel
+from boundary.search_new.search_orchestrator import search_orchestrator
+from orchestration.pdf_orchestration import get_individuals
 from orchestration.sharepoint_orchestration import (
     get_current_company,
     go_to_sentroweb,
 )
-from orchestration.pdf_orchestration import get_individuals
-
-import asyncio
-import nest_asyncio
-import logging
 
 nest_asyncio.apply()
 
@@ -83,7 +84,8 @@ while True:
 
     screenshots, kah_list = asyncio.run(search_orchestrator(kah_list))
 
-    print(kah_list)
+    for kah in kah_list:
+        print(f"{kah.name} - {kah.role}")
 
     pdf_folders = create_pdf_folders(config.CURRENT_YEAR, sentroweb_client, kah_list)
 

@@ -3,9 +3,11 @@ This module tests functions related to individuals.
 For now, only sort_individuals exists.
 """
 
-from core.individual import Individual, sort_individuals
 from typing import List
+
 import pytest
+
+from core.individual import Individual, sort_individuals
 
 
 @pytest.mark.parametrize(

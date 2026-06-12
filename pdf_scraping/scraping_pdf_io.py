@@ -8,10 +8,12 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from playwright.sync_api import Page
-from src.boundary.pdf_io import download_pdf
-import os
 import logging
+import os
+
+from playwright.sync_api import Page
+
+from src.boundary.pdf_io import download_pdf
 
 
 def download_pdf_to_disk(

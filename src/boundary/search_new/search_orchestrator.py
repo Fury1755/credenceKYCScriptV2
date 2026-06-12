@@ -3,17 +3,19 @@ This module orchestrates the search process.
 Manages sync and async functions.
 """
 
-from boundary.search_new.browser_init import init_browser
-from core.individual import Individual
-from boundary.search_new.concurrent_loading import load_pages_for_individual
-from boundary.search_new.search_input import (
-    set_individual_attributes,
-    screenshot_individual_search,
-    append_related_individuals,
-)
-from playwright.async_api import Page, BrowserContext
 import asyncio
 from typing import List
+
+from playwright.async_api import BrowserContext, Page
+
+from boundary.search_new.browser_init import init_browser
+from boundary.search_new.concurrent_loading import load_pages_for_individual
+from boundary.search_new.search_input import (
+    append_related_individuals,
+    screenshot_individual_search,
+    set_individual_attributes,
+)
+from core.individual import Individual
 
 
 async def search_orchestrator(

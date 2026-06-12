@@ -5,13 +5,15 @@ Because it mutates the same workbook that it takes as input,
 this module is not pure.
 """
 
+import logging
+from typing import TYPE_CHECKING, List, Optional, Union
+
 from openpyxl import Workbook
-from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.cell.cell import Cell, MergedCell
 from openpyxl.utils import range_boundaries
+from openpyxl.worksheet.worksheet import Worksheet
+
 from core.individual import Individual
-from typing import Union, Optional, List, TYPE_CHECKING
-import logging
 
 if TYPE_CHECKING:
     from boundary.sharepoint_clients.sharepoint_client import SharePointClient

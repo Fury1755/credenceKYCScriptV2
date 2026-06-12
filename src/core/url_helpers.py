@@ -1,7 +1,7 @@
 """This module contains helper functions to parse urls"""
 
 import logging
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import parse_qs, urlparse
 
 
 def get_url_id(url: str) -> str:

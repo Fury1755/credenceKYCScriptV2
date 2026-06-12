@@ -1,14 +1,15 @@
 """This module defines private folder methods for the class SharePointClient."""
 
+import logging
+from abc import abstractmethod
+from typing import List, Optional
+
 from playwright.sync_api import APIResponse, Page
+
 from boundary.sharepoint_exceptions import (
     SharePointAttributeError,
     SharePointContractViolation,
 )
-
-from typing import Optional, List
-from abc import abstractmethod
-import logging
 
 # pylint: disable=protected-access
 # ^^ makes everything private which is what we want
@@ -79,7 +80,7 @@ class FolderMixin:
             # include child folders and files
             # '?' marks the start of query parameters
             # '$' marks odata system query parameters
-            "?$expand=Folders,Files"
+            "?$expand=Folders,Files,Files/ListItemAllFields"
             # specify root folder fields, so the response includes itself (the root folder)
             #  and we know where the children came from
             # '&' separates query parameters when thhere is more than one
@@ -87,7 +88,8 @@ class FolderMixin:
             # filter child fields
             "Folders/Name,Folders/ServerRelativeUrl,"
             "Folders/TimeLastModified,Folders/FileSystemObjectType,"
-            "Files/Name,Files/ServerRelativeUrl,Files/TimeLastModified,Files/FileSystemObjectType"
+            "Files/Name,Files/ServerRelativeUrl,Files/TimeLastModified,Files/FileSystemObjectType,"
+            "Files/ListItemAllFiends/Modified"
         )
 
         logging.debug("Endpoint: %s", endpoint)
@@ -142,8 +144,19 @@ class FolderMixin:
     def _compare_pdfs(
         self, file: dict[str, str], most_recent_file: dict[str, str]
     ) -> bool:
+        """
+        Compares two pdf files and returns the most recent file dictionary corresponding
+        to the most recent file.
+
+        Mutates the (possibly inaccurate)'TimeLastModified' property to reflect
+        ['ListItemAllFields']['Modified'] if the latter is higher..
+        """
         if not (".pdf" in file["Name"].lower() and "profile" in file["Name"].lower()):
             return False
+
+        if "ListItemAllFields" in file and "Modified" in file["ListItemAllFields"]:
+            if file["TimeLastModified"] < file["ListItemAllFields"]["Modified"]:
+                file["TimeLastModified"] = file["ListItemAllFields"]["Modified"]
         # ISO formats for date times are lexicographically comparable
         logging.info(
             "Comparing %s - %s with %s - %s",
