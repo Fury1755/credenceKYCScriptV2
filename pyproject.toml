@@ -17,6 +17,7 @@ dependencies = [
 dev = [
     "black>=26.5.1",
     "hypothesis>=6.155.1",
+    "pyright>=1.1.410",
     "pytest>=9.0.3",
     "pytest-cov>=7.1.0",
     "ruff>=0.15.14",
@@ -32,3 +33,7 @@ ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]
 "test_*.py" = ["S101"]
+
+[tool.pyright]
+extraPaths = ["src", "tests"]
+include = ["src", "tests"]
