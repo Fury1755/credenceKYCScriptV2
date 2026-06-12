@@ -3,6 +3,7 @@ This module loads pages concurrently.
 """
 
 import asyncio
+import random
 from typing import Literal
 
 from playwright.async_api import Page
@@ -51,7 +52,8 @@ async def load_page(context, engine: Literal["Google", "Baidu"], query: str) -> 
             2. query
             3. page
     """
-
+    # add random sleep to avoid google's recaptcha
+    await asyncio.sleep(random.uniform(1, 1.5))  # noqa: S311
     page = await context.new_page()
     if engine == "Google":
         await page.goto(f"https://google.com/search?q={query}")
