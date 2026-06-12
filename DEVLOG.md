@@ -66,3 +66,7 @@ The script is now functional!
 - fixed bugs: insufficient rate throttling in 'response_helpers.py', non-mutating lists in 'sharepoint_client.py'
 
 V2 is now feature complete.
+
+## 2026-06-12
+- added 'date_helpers.py': date parsing and better bizfile navigation
+My manager/supervisor is on my tail! Development will take a backseat, running this script/adding new features to make the script faster is the priority.
