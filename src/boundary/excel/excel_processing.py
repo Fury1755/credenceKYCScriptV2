@@ -6,6 +6,7 @@ this module is not pure.
 """
 
 import logging
+import time
 from typing import TYPE_CHECKING, List, Optional, Union
 
 from openpyxl import Workbook
@@ -127,5 +128,8 @@ def append_excel(
             write_to_cell(ws, company_cell.offset(i, 7), str(individual.google))
             write_to_cell(ws, company_cell.offset(i, 8), str(individual.baidu))
             write_to_cell(ws, company_cell.offset(i, 12), str(individual.kyc_status))
+            current_time = time.localtime()
+            readable_time = time.strftime("%H:%M:%S", current_time)
+            write_to_cell(ws, company_cell.offset(i, 13), str(readable_time))
 
     return wb
