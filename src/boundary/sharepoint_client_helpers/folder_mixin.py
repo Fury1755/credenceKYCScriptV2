@@ -142,21 +142,23 @@ class FolderMixin:
         raise SharePointAttributeError("Error: Type attribute not accessed")
 
     def _compare_pdfs(
-        self, file: dict[str, str], most_recent_file: dict[str, str]
+        self,
+        file: dict[str, str],
+        most_recent_file: dict[str, str],
     ) -> bool:
         """
         Compares two pdf files and returns the most recent file dictionary corresponding
         to the most recent file.
 
         Mutates the (possibly inaccurate)'TimeLastModified' property to reflect
-        ['ListItemAllFields']['Modified'] if the latter is higher..
+        ['ListItemAllFields']['Modified'] if the latter is higher.
         """
         if not (".pdf" in file["Name"].lower() and "profile" in file["Name"].lower()):
             return False
 
         if "ListItemAllFields" in file and "Modified" in file["ListItemAllFields"]:
-            if file["TimeLastModified"] < file["ListItemAllFields"]["Modified"]:
-                file["TimeLastModified"] = file["ListItemAllFields"]["Modified"]
+            if file["TimeLastModified"] < file["ListItemAllFields"]["Modified"]:  # type: ignore
+                file["TimeLastModified"] = file["ListItemAllFields"]["Modified"]  # type: ignore
         # ISO formats for date times are lexicographically comparable
         logging.info(
             "Comparing %s - %s with %s - %s",
