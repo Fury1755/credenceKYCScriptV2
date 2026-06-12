@@ -1,4 +1,11 @@
-"""This module processes PDFs."""
+"""
+This module processes PDFs.
+'if it aint broke, don't touch it'
+Refactoring this function would likely take half a day or more.
+More importantly, it has been TESTED and manually verified against 100+ files.
+As long as this function is pure and works, we don't need to touch it.
+Just write around the input/output.
+"""
 
 import io
 import re
