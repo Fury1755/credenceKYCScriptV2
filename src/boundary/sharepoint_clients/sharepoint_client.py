@@ -29,6 +29,7 @@ from boundary.sharepoint_exceptions import (
     SharePointResponseError,
 )
 from core import string_helpers
+from core.date_helpers import get_effective_date, parse_date_from_name
 
 
 class SharePointClient(FolderMixin):
@@ -200,7 +201,7 @@ class SharePointClient(FolderMixin):
         acra_docs_contents = acra_docs._parser.get_folders_and_files(acra_docs_response)
         if acra_docs_contents is None:
             raise SharePointError(f"No files and folders found in {acra_docs.name}")
-        bizfile = acra_docs._bizfile_recursive_explorer(acra_docs_contents, None)
+        bizfile = acra_docs._bizfile_recursive_explorer(acra_docs_contents, None, None)
         if bizfile is None:
             raise SharePointError(f"Found no bizfiles at all in {company.name}")
         logging.info(
@@ -295,6 +296,7 @@ class SharePointClient(FolderMixin):
         self,
         contents: dict[str, List[dict[str, str]]],
         most_recent_file: Optional[dict[str, str]],
+        inherited_date: Optional[str],
     ) -> dict[str, str] | None:
         """
         Recursively explores the current directory and returns a dictionary of the
@@ -329,7 +331,18 @@ class SharePointClient(FolderMixin):
                         and "profile" in file["Name"].lower()
                     ):
                         most_recent_file = file
+                        file["TimeLastModified"] = (
+                            parse_date_from_name(file["Name"])
+                            or inherited_date
+                            or get_effective_date(file)
+                        )
                 else:
+                    file_date = (
+                        parse_date_from_name(file["Name"])
+                        or inherited_date
+                        or get_effective_date(file)
+                    )
+                    file["TimeLastModified"] = file_date
                     if self._compare_pdfs(file, most_recent_file):
                         # most_recent_file is changed to file
                         # this is fine because python doesnt pass by reference
@@ -340,17 +353,25 @@ class SharePointClient(FolderMixin):
                             file["Name"],
                             file["TimeLastModified"],
                         )
+                        logging.info(
+                            "Selected %s - %s", file["Name"], file["TimeLastModified"]
+                        )
                         most_recent_file = file
 
         if folders:
             for folder in folders:
+                folder_date = (
+                    parse_date_from_name(folder["Name"])
+                    or inherited_date
+                    or get_effective_date(folder)
+                )
                 logging.info("Entering folder '%s' in '%s'", folder["Name"], self.name)
                 folder_client = SharePointClient(
                     self.page,
                     self.site_url,
                     folder["ServerRelativeUrl"],
                     folder["Name"],
-                    folder["TimeLastModified"],
+                    folder_date,
                     str(self._parse_item_type(folder)),
                 )
                 folder_contents = folder_client._parser.get_folders_and_files(
@@ -358,7 +379,7 @@ class SharePointClient(FolderMixin):
                 )
                 if folder_contents:
                     most_recent_file = folder_client._bizfile_recursive_explorer(
-                        folder_contents, most_recent_file
+                        folder_contents, most_recent_file, folder_date
                     )
 
         return most_recent_file

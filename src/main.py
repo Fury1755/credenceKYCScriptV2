@@ -19,7 +19,7 @@ from boundary.search_new.search_orchestrator import search_orchestrator
 from orchestration.pdf_orchestration import get_individuals
 from orchestration.sharepoint_orchestration import (
     get_current_company,
-    go_to_sentroweb,
+    go_to_client,
 )
 
 nest_asyncio.apply()
@@ -80,7 +80,7 @@ while True:
 
     sentroweb_client = current_company._build_client_query("Sentroweb Search")  # pylint: disable=protected-access
 
-    go_to_sentroweb(sentroweb_client)
+    go_to_client(sentroweb_client)
 
     screenshots, kah_list = asyncio.run(search_orchestrator(kah_list))
 
