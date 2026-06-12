@@ -56,7 +56,13 @@ The script is now functional!
 - created 'test_sharepoint_clients': unit tests for sharepoint_client
 - created 'sharepoint_client_parser.py': refactored sharepoint_client
 
-## 2026-07-09
+## 2026-06-10
 - created 'pdf_scraping/': scrapes pdfs
 - created 'test_walk_folder_contents.py' and 'walk_folder_contents.py': more unit tests/factories for sharepoint_client
 - refactored 'sharepoint_client.py': better organization, SRP
+
+## 2026-06-11
+- replaced 'search.py' with 'search_new/': async browser loading for all tabs
+- fixed bugs: insufficient rate throttling in 'response_helpers.py', non-mutating lists in 'sharepoint_client.py'
+
+V2 is now feature complete.
