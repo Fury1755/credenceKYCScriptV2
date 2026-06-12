@@ -20,9 +20,21 @@ def set_individual_attributes(kah_list: List[Individual]) -> List[Individual]:
     for individual in kah_list:
         print(f"Individual: {individual.name},\n ID: {individual.id_value}")
         individual.id_type = input("Enter id type: ")
+        individual.id_status = input("Enter id status: ")
         individual.chinese_name = input("Enter chinese name ('-') if none: ")
         if individual.chinese_name != "-":
             individual.baidu = True
+        else:
+            while True:
+                is_baidu = input("Baidu search? (Y/N): ")
+                if is_baidu.upper() == "Y":
+                    individual.baidu = True
+                    break
+                elif is_baidu.upper() == "N":
+                    individual.baidu = False
+                    break
+                else:
+                    print("Invalid input")
 
     return kah_list
 
@@ -42,10 +54,24 @@ def append_related_individuals(kah_list: List[Individual]) -> List[Individual]:
             new_individual.chinese_name = input(
                 f"Enter {new_individual.name}'s chinese name ('-' if None): "
             )
+            if new_individual.chinese_name != "-":
+                new_individual.baidu = True
+            else:
+                while True:
+                    is_baidu = input("Baidu search? (Y/N): ")
+                    if is_baidu.upper() == "Y":
+                        new_individual.baidu = True
+                        break
+                    elif is_baidu.upper() == "N":
+                        new_individual.baidu = False
+                        break
+                    else:
+                        print("Invalid input")
             kah_list.append(new_individual)
         if is_new_individual.upper() == "N":
             break
-        print("Invalid input")
+        else:
+            print("Invalid input")
     return kah_list
 
 

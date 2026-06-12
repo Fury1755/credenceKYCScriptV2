@@ -216,7 +216,7 @@ def process_pdf(response_pdf: io.BytesIO) -> List[Individual]:
         officer_table = process_list(officer_table)
         # now we have two lists of shareholders
 
-        print("shareholders: ", shareholder_table)
+        print("\nshareholders: ", shareholder_table)
         print("officers: ", officer_table)
 
         # now we return the KAH class
@@ -244,7 +244,7 @@ def process_pdf(response_pdf: io.BytesIO) -> List[Individual]:
                 "-",
                 "-",
                 True,
-                False,
+                True,
                 False,
                 None,
             )

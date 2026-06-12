@@ -145,6 +145,13 @@ class FolderMixin:
         if not (".pdf" in file["Name"].lower() and "profile" in file["Name"].lower()):
             return False
         # ISO formats for date times are lexicographically comparable
+        logging.info(
+            "Comparing %s - %s with %s - %s",
+            file["Name"],
+            file["TimeLastModified"],
+            most_recent_file["Name"],
+            most_recent_file["TimeLastModified"],
+        )
         if file["TimeLastModified"] >= most_recent_file["TimeLastModified"]:
             logging.info("Updated TimeLastModified to %s", file["TimeLastModified"])
             return True

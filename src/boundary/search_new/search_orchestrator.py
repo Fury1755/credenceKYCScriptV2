@@ -18,7 +18,7 @@ from typing import List
 
 async def search_orchestrator(
     kah_list: List[Individual],
-) -> List[dict[str, dict[str, bytes]]]:
+) -> tuple[List[dict[str, dict[str, bytes]]], List[Individual]]:
     """
     Orchestrates the search process using helper modules.
     Returns a list of dicts for backwards compatibility with search.py.
@@ -50,7 +50,8 @@ async def search_orchestrator(
         for name_bytes in screenshots[individual].items():
             # name_bytes is a tuple
             output[individual.name][name_bytes[0]] = name_bytes[1]
-        output_wrapper.append(output)
+
+    output_wrapper.append(output)
 
     await context.close()
-    return output_wrapper
+    return output_wrapper, kah_list

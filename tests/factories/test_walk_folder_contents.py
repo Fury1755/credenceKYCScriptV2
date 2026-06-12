@@ -4,7 +4,7 @@ Personally, it clarifies the behaviour of create_folder for me, and is inexpensi
 to write.
 """
 
-from walk_folder_contents import create_folder
+from .walk_folder_contents import create_folder
 
 
 def test_create_folder():

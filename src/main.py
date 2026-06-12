@@ -11,7 +11,10 @@ from boundary.search_new.search_orchestrator import search_orchestrator
 from boundary.excel.excel_io import download_excel, upload_excel
 from boundary.pdf_io import create_pdf_folders, upload_pdfs
 from boundary.excel.excel_processing import get_latest_company_name, append_excel
-from orchestration.sharepoint_orchestration import get_current_company, go_to_sentroweb
+from orchestration.sharepoint_orchestration import (
+    get_current_company,
+    go_to_sentroweb,
+)
 from orchestration.pdf_orchestration import get_individuals
 
 import asyncio
@@ -55,38 +58,41 @@ for p in context.pages[1:]:  # close irrelevant pages
     p.close()
 
 # refresh the cookies
-page.goto(config.SITE_URL)
+page.goto(config.SITE_URL, timeout=60000)
 
-wb = download_excel(page, config.SITE_URL, config.EXCEL_URL)
+while True:
+    wb = download_excel(page, config.SITE_URL, config.EXCEL_URL)
 
-latest_company_name = get_latest_company_name(wb, config.CURRENT_LETTER)
+    latest_company_name = get_latest_company_name(wb, config.CURRENT_LETTER)
 
-current_company = get_current_company(
-    page,
-    config.SITE_URL,
-    config.COMPANY_LIST_BY_LETTER_PATH,
-    latest_company_name,
-    config.CURRENT_LETTER,
-)
+    current_company = get_current_company(
+        page,
+        config.SITE_URL,
+        config.COMPANY_LIST_BY_LETTER_PATH,
+        latest_company_name,
+        config.CURRENT_LETTER,
+    )
 
-bizfile = current_company.get_bizfile(current_company)
+    bizfile = current_company.get_bizfile(current_company)
 
-kah_list = get_individuals(page, config.SITE_URL, bizfile)
+    kah_list = get_individuals(page, config.SITE_URL, bizfile)
 
-sentroweb_client = current_company._build_client_query("Sentroweb Search")  # pylint: disable=protected-access
+    sentroweb_client = current_company._build_client_query("Sentroweb Search")  # pylint: disable=protected-access
 
-go_to_sentroweb(sentroweb_client)
+    go_to_sentroweb(sentroweb_client)
 
-screenshots = asyncio.run(search_orchestrator(kah_list))
+    screenshots, kah_list = asyncio.run(search_orchestrator(kah_list))
 
-pdf_folders = create_pdf_folders(config.CURRENT_YEAR, sentroweb_client, kah_list)
+    print(kah_list)
 
-upload_pdfs(pdf_folders, screenshots)
+    pdf_folders = create_pdf_folders(config.CURRENT_YEAR, sentroweb_client, kah_list)
 
-wb = download_excel(page, config.SITE_URL, config.EXCEL_URL)
+    upload_pdfs(pdf_folders, screenshots)
 
-wb = append_excel(wb, config.CURRENT_LETTER, kah_list, current_company)
+    wb = download_excel(page, config.SITE_URL, config.EXCEL_URL)
 
-upload_excel(page, wb, config.SITE_URL, config.EXCEL_URL)
+    wb = append_excel(wb, config.CURRENT_LETTER, kah_list, current_company)
+
+    upload_excel(page, wb, config.SITE_URL, config.EXCEL_URL)
 
 #  don't need context.close(); playwright closes it automatically at the end of 'with'

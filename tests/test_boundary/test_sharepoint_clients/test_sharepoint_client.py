@@ -62,7 +62,7 @@ def test_get_next_company_coarse():
             MagicMock(),
         )
 
-        dummy.get_next_company(folder_names[0])
+        dummy.get_next_company(folder_names[0], folder_names[0][0])
 
         assert mock_build_query.call_args.args[0] == folder_names[1]
 
