@@ -4,6 +4,7 @@ Manages sync and async functions.
 """
 
 import asyncio
+import random
 from typing import List
 
 from playwright.async_api import BrowserContext, Page
@@ -34,7 +35,10 @@ async def search_orchestrator(
     page: Page
     context: BrowserContext
 
-    tasks = [load_pages_for_individual(page, individual) for individual in kah_list]
+    tasks = []
+    for individual in kah_list:
+        tasks.append(load_pages_for_individual(page, individual))
+        await asyncio.sleep(random.uniform(0.5, 1.5))  # noqa: S311
 
     # thank god for type hint diligence
     search_results: List[List[tuple[str, str, Page]]] = await asyncio.gather(*tasks)

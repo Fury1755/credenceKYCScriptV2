@@ -3,12 +3,13 @@ This module loads pages concurrently.
 """
 
 import asyncio
-import random
 from typing import Literal
 
 from playwright.async_api import Page
 
 from core.individual import Individual
+
+semaphore = asyncio.Semaphore(10)
 
 
 def load_pages_for_individual(page: Page, individual: Individual):
@@ -52,12 +53,12 @@ async def load_page(context, engine: Literal["Google", "Baidu"], query: str) -> 
             2. query
             3. page
     """
-    # add random sleep to avoid google's recaptcha
-    await asyncio.sleep(random.uniform(1, 1.5))  # noqa: S311
-    page = await context.new_page()
-    if engine == "Google":
-        await page.goto(f"https://google.com/search?q={query}")
-    elif engine == "Baidu":
-        await page.goto(f"https://www.baidu.com/s?wd={query}", timeout=60000)
+    async with semaphore:
+        # add random sleep to avoid google's recaptcha
+        page = await context.new_page()
+        if engine == "Google":
+            await page.goto(f"https://google.com/search?q={query}", timeout=0)
+        elif engine == "Baidu":
+            await page.goto(f"https://www.baidu.com/s?wd={query}", timeout=0)
 
-    return (engine, query, page)
+        return (engine, query, page)
